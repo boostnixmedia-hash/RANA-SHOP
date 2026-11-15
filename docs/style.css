@@ -563,3 +563,8 @@ a.on,.filters a.on{border-color:var(--rd)}
 .kl-rings{box-shadow:none;background:radial-gradient(circle,rgba(255,255,255,.35) 0 45%,rgba(0,0,0,.03) 46% 60%,transparent 61%)}
 .h-hero-txt{animation:none}
 @media(prefers-reduced-motion:reduce){.kl-brand>*,.kl-tiles figure,.kl-btn.big::after{animation:none!important}}
+/* tiles: dark frame so white products (sneaker) stand out */
+.kl-tiles img{border:6px solid #161616;background:#fff;box-shadow:0 14px 28px rgba(0,0,0,.28)}
+.kl-tiles figure::before{border-color:rgba(226,65,43,.7)}
+.kl-tiles figcaption{color:#161616;font-family:'Poppins',sans-serif!important;font-weight:600;letter-spacing:.35em;font-size:.8rem}
+.kl-det div{border-color:#161616}

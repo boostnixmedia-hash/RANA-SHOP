@@ -37,7 +37,8 @@
     if (!ps.length) return collection();
     const pickCat = slug => ps.find(x => x.cat === slug && x.landing) || ps.find(x => x.cat === slug && x.featured) || ps.find(x => x.cat === slug);
     let tiles = ps.filter(x => x.landing);
-    RS.CATS.forEach(c => { const x = pickCat(c.slug); if (x && !tiles.includes(x)) tiles.push(x); });
+    ['shirts', 'pants', 't-shirts'].forEach(c => { const x = pickCat(c); if (x && !tiles.includes(x)) tiles.push(x); });
+    const jacket = ps.find(x => /overshirt|jacket/i.test(x.slug)); if (jacket && !tiles.includes(jacket)) tiles.push(jacket);
     ps.forEach(x => { if (tiles.length < 4 && !tiles.includes(x)) tiles.push(x); });
     tiles = tiles.slice(0, 4);
     const rest = ps.filter(x => !tiles.includes(x)); const crops = (rest.length >= 4 ? rest : ps).slice(0, 4).map(x => [x, 'center 25%']);
@@ -53,7 +54,7 @@
       <h1 class="kl-brand"><span style="--i:0">R</span><span style="--i:1">A</span><b style="--i:2">N</b><span style="--i:3">A</span><span style="--i:4">S</span><span style="--i:5">H</span><b style="--i:6">O</b><span style="--i:7">P</span></h1>
       <div class="kl-sub"><span>CREATIVE LOOK</span><span>NEW SEASON '27</span></div>
       <p class="kl-hint">জুম করতে ছবিতে ক্লিক করুন</p>
-      <div class="kl-tiles">${tiles.map((p, i) => `<figure class="t${i}"><img src="${esc(p.img)}" alt="${esc(p.name)} - Rana Shop" ${i > 1 ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async" width="300" height="400" data-zoom="${esc(p.img)}"><figcaption>${esc((RS.cat(p.cat) || {}).name || '').toUpperCase()}</figcaption></figure>`).join('')}<div class="kl-rings"></div></div>
+      <div class="kl-tiles">${tiles.map((p, i) => `<figure class="t${i}"><img src="${esc(p.img)}" alt="${esc(p.name)} - Rana Shop" ${i > 1 ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async" width="300" height="400" data-zoom="${esc(p.img)}"><figcaption>${/overshirt|jacket/i.test(p.slug) ? 'JACKET' : esc((RS.cat(p.cat) || {}).name || '').toUpperCase()}</figcaption></figure>`).join('')}<div class="kl-rings"></div></div>
       <a class="kl-btn big" href="#order" data-go>ORDER NOW</a>
     </section>
     <section class="kl-sec kl-q"><h2>গুণমান</h2><ul>${quality.map(q => `<li>${q}</li>`).join('')}</ul><a class="kl-btn sm" href="#order" data-go>অর্ডার করুন</a></section>
