@@ -614,3 +614,10 @@ a.on,.filters a.on{border-color:var(--rd)}
 .kl-how{margin:-4px 0 14px;color:#555;font-size:.95rem}
 .kl-pc .ok{top:auto;bottom:auto;right:auto;left:50%;transform:translateX(-50%);margin-top:-30px;position:relative;display:none;width:max-content}.kl-pc.on .ok{display:block}
 .kl-pc .kl-go{display:block;margin-top:8px;text-align:center;background:var(--rd);color:#fff;border-radius:6px;padding:8px 4px;font-size:.85rem;font-weight:600;font-family:'Anek Bangla','Poppins',sans-serif}
+/* thank-you page: breathing room */
+.done{padding:70px 22px 90px!important}
+.done img{margin-bottom:26px!important}
+.done h1{margin-bottom:18px!important}
+.done p{line-height:1.75;margin-bottom:12px!important}
+.done p:last-of-type{margin-bottom:34px!important}
+.done .btn{display:flex;width:100%;max-width:340px;margin:0 auto 16px;padding:17px 20px}
