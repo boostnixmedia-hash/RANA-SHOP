@@ -22,11 +22,11 @@
     };
   }
   function shell(active, title, body, action) {
-    const pending = RS.orders().filter(o => o.status === 'Pending').length;
+    const pending = RS.orders().filter(o => !o.seen).length;
     root.innerHTML = `<div class="adm"><aside class="side">
       <a class="logo" href="#/"><img class="mark-img" src="../img/logo-mark.png" alt=""><span>RANA SHOP</span></a>
       <a href="#/" class="${active === 'dash' ? 'on' : ''}">Dashboard</a>
-      <a href="#/orders" class="${active === 'orders' ? 'on' : ''}">Orders ${pending ? `<span class="pill y" style="margin-left:6px">${pending}</span>` : ''}</a>
+      <a href="#/orders" class="${active === 'orders' ? 'on' : ''}">Orders ${pending ? `<span class="pill y" style="margin-left:6px" title="New orders you have not opened yet">${pending}</span>` : ''}</a>
       <a href="#/products" class="${active === 'products' ? 'on' : ''}">Products</a>
       <a href="#/new" class="${active === 'new' ? 'on' : ''}">+ Add product</a>
       <a href="../" target="_blank">View website ↗</a>
@@ -51,7 +51,7 @@
   function ordersTable(os) {
     if (!os.length) return '<p style="color:var(--muted)">No orders yet. Place one from the website to see it here.</p>';
     return `<div style="overflow-x:auto"><table class="tbl"><tr><th>Order</th><th>Customer</th><th class="hide-m">Date</th><th>Total</th><th>Status</th><th></th></tr>
-      ${os.map(o => `<tr class="orow" data-no="${o.no}" style="cursor:pointer"><td><b style="font-weight:500">${o.no}</b></td><td>${esc(o.name)}<br><small style="color:var(--muted)">${esc(o.phone)}</small></td>
+      ${os.map(o => `<tr class="orow" data-no="${o.no}" style="cursor:pointer"><td><b style="font-weight:500">${o.no}</b>${o.seen ? '' : ' <span class="pill y" style="margin-left:4px">New</span>'}</td><td>${esc(o.name)}<br><small style="color:var(--muted)">${esc(o.phone)}</small></td>
       <td class="hide-m">${new Date(o.date).toLocaleString()}</td><td>${money(o.total)}</td>
       <td><select class="qs" data-no="${o.no}" style="width:auto;margin:0;padding:6px 8px">${STATUSES.map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}</select></td>
       <td><a class="btn sm" href="#/order/${o.no}">View</a></td></tr>`).join('')}</table></div>`;
@@ -61,7 +61,7 @@
     root.querySelectorAll('.orow').forEach(r => r.onclick = e => { if (!e.target.closest('a,select')) location.hash = '#/order/' + r.dataset.no; });
   }
   function orders() {
-    shell('orders', 'Orders', `<div class="box">${ordersTable(RS.orders())}</div><p style="font-size:.85rem;color:var(--muted)">Tip: change the status right here, or tap an order to see everything.</p>`,
+    shell('orders', 'Orders', `<p style="margin:0 0 12px;font-size:.95rem">Total orders: <b>${RS.orders().length}</b> &nbsp;·&nbsp; New (not opened yet): <b>${RS.orders().filter(o => !o.seen).length}</b></p><div class="box">${ordersTable(RS.orders())}</div><p style="font-size:.85rem;color:var(--muted)">Tip: change the status right here, or tap an order to see everything.</p>`,
       `<button class="btn sm" id="xls">⬇ Download Excel</button>`);
     bindOrders();
     document.getElementById('xls').onclick = exportExcel;
@@ -91,6 +91,7 @@
   function order(no) {
     const os = RS.orders(); const o = os.find(x => x.no === no);
     if (!o) return orders();
+    if (!o.seen) { o.seen = true; RS.saveOrders(os); }
     const bd = String(o.phone || '').replace(/\D/g, '').replace(/^0/, '880');
     shell('orders', 'Order ' + o.no, `<div class="form2"><div class="box"><h2>Items</h2><table class="tbl">${o.items.map(i => `<tr><td><img src="${src(i.img)}" alt=""></td><td>${esc(i.name)}<br><small style="color:var(--muted)">${esc([i.color, i.size].filter(Boolean).join(' / '))}</small></td><td>× ${i.qty}</td><td>${money(i.price * i.qty)}</td></tr>`).join('')}</table>
       <div style="max-width:300px;margin:16px 0 0 auto"><div class="row"><span>Subtotal</span><span>${money(o.sub)}</span></div><div class="row"><span>Delivery</span><span>${money(o.ship)}</span></div><div class="row total"><span>Total</span><span>${money(o.total)}</span></div></div></div>
