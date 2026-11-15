@@ -40,7 +40,7 @@
     RS.CATS.forEach(c => { const x = pickCat(c.slug); if (x && !tiles.includes(x)) tiles.push(x); });
     ps.forEach(x => { if (tiles.length < 4 && !tiles.includes(x)) tiles.push(x); });
     tiles = tiles.slice(0, 4);
-    const crops = [[tiles[0], '45% 35%'], [tiles[1] || tiles[0], '50% 60%'], [tiles[2] || tiles[0], '40% 40%'], [tiles[3] || tiles[0], '55% 70%']];
+    const rest = ps.filter(x => !tiles.includes(x)); const crops = (rest.length >= 4 ? rest : ps).slice(0, 4).map(x => [x, 'center 25%']);
     const reviews = ps.flatMap(p => (p.reviews || []).filter(r => r[1]).map(r => [r[0], r[1], p.name]));
     const end = RS.SHOP.offerEnd ? new Date(RS.SHOP.offerEnd) : null;
     const showTimer = end && end > new Date();
@@ -50,14 +50,14 @@
     app.innerHTML = `<div class="kl">
     <section class="kl-hero"><i class="pl a">+</i><i class="pl b">+</i><i class="pl c">+</i><i class="pl d">+</i>
       <div class="kl-welcome">WELCOME<br>TO</div><img class="kl-mk" src="img/logo-mark.png" alt="">
-      <h1 class="kl-brand"><span>R</span><span>A</span><b>N</b><span>A</span> <span>S</span><span>H</span><b>O</b><span>P</span></h1>
+      <h1 class="kl-brand"><span style="--i:0">R</span><span style="--i:1">A</span><b style="--i:2">N</b><span style="--i:3">A</span><span style="--i:4">S</span><span style="--i:5">H</span><b style="--i:6">O</b><span style="--i:7">P</span></h1>
       <div class="kl-sub"><span>CREATIVE LOOK</span><span>NEW SEASON '27</span></div>
       <p class="kl-hint">জুম করতে ছবিতে ক্লিক করুন</p>
-      <div class="kl-tiles">${tiles.map((p, i) => `<figure class="t${i}"><img src="${esc(p.img)}" alt="${esc(p.name)}" data-zoom="${esc(p.img)}"><figcaption>${esc((RS.cat(p.cat) || {}).name || '').toUpperCase()}</figcaption><span class="tap">☝</span></figure>`).join('')}<div class="kl-rings"></div></div>
+      <div class="kl-tiles">${tiles.map((p, i) => `<figure class="t${i}"><img src="${esc(p.img)}" alt="${esc(p.name)}" data-zoom="${esc(p.img)}"><figcaption>${esc((RS.cat(p.cat) || {}).name || '').toUpperCase()}</figcaption></figure>`).join('')}<div class="kl-rings"></div></div>
       <a class="kl-btn big" href="#order" data-go>ORDER NOW</a>
     </section>
     <section class="kl-sec kl-q"><h2>গুণমান</h2><ul>${quality.map(q => `<li>${q}</li>`).join('')}</ul><a class="kl-btn sm" href="#order" data-go>অর্ডার করুন</a></section>
-    <section class="kl-sec"><div class="kl-det">${crops.map(([p, pos]) => `<div data-zoom="${esc(p.img)}" style="background-image:url('${esc(p.img)}');background-position:${pos}"></div>`).join('')}</div><p class="kl-hint sm">জুম করে দেখতে ছবিতে ক্লিক করুন</p></section>
+    <section class="kl-sec"><div class="kl-det">${crops.map(([p, pos]) => `<div data-zoom="${esc(p.img)}" style="background-image:url('${esc(p.img)}');background-position:${pos};background-size:cover"><span>${esc(p.name)}</span></div>`).join('')}</div><p class="kl-hint sm">জুম করে দেখতে ছবিতে ক্লিক করুন</p></section>
     ${reviews.length ? `<section class="kl-sec"><h2>কাস্টমার রিভিউ</h2><div class="kl-revs">${reviews.map(r => `<div><div class="who"><span>${esc((r[0] || 'C')[0])}</span><b>${esc(r[0] || 'Customer')}</b><small>${esc(r[2])}</small></div><p>“${esc(r[1])}”</p></div>`).join('')}</div></section>` : ''}
     ${showTimer ? `<section class="kl-sec"><h2>অফারটি শেষ হতে বাকি</h2><div class="kl-timer"><div><b id="tD">0</b>দিন</div><div><b id="tH">0</b>ঘন্টা</div><div><b id="tM">0</b>মিনিট</div><div><b id="tS">0</b>সেকেন্ড</div></div></section>` : ''}
     ${charts.length ? `<section class="kl-sec kl-chart"><h2 class="c">সাইজ চার্ট</h2><p class="c muted">আপনার সঠিক সাইজ নির্বাচন করুন · মাপ ইঞ্চিতে দেওয়া হয়েছে</p>

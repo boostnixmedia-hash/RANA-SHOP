@@ -473,3 +473,36 @@ section.sec .grid{grid-template-columns:repeat(auto-fit,minmax(220px,300px));jus
 .kl-tiles figcaption{z-index:2}.kl-tiles .t0 figcaption,.kl-tiles .t2 figcaption{left:-44px}.kl-tiles .t1 figcaption,.kl-tiles .t3 figcaption{right:-44px}
 @media(max-width:640px){.kl-tiles .t0 figcaption,.kl-tiles .t2 figcaption{left:-28px}.kl-tiles .t1 figcaption,.kl-tiles .t3 figcaption{right:-28px}}
 @media(max-width:640px){.kl-tiles{padding:0 30px}.kl-tiles .t0 figcaption,.kl-tiles .t2 figcaption{left:-36px}.kl-tiles .t1 figcaption,.kl-tiles .t3 figcaption{right:-36px}}
+/* brand letter animation */
+.kl-brand>*{display:inline-block;animation:klDrop .7s cubic-bezier(.2,1.4,.4,1) both,klFloat 3.2s ease-in-out infinite;animation-delay:calc(var(--i)*.09s),calc(.9s + var(--i)*.18s)}
+.kl-brand b{animation:klDrop .7s cubic-bezier(.2,1.4,.4,1) both,klBox 3.2s ease-in-out infinite;animation-delay:calc(var(--i)*.09s),calc(.9s + var(--i)*.18s)}
+.kl-brand>*:hover{animation-play-state:paused;transform:scale(1.15) rotate(-4deg)!important}
+@keyframes klDrop{from{opacity:0;transform:translateY(-70px) rotate(-20deg) scale(.6)}}
+@keyframes klFloat{0%,100%{translate:0 0;rotate:0deg}50%{translate:0 -7px;rotate:3deg}}
+@keyframes klBox{0%,100%{translate:0 0;rotate:0deg}50%{translate:0 5px;rotate:-3deg}}
+.kl-sub span{animation:klFade 1s .9s both}@keyframes klFade{from{opacity:0;letter-spacing:.5em}}
+@media(prefers-reduced-motion:reduce){.kl-brand>*,.kl-sub span{animation:none}}
+/* tile frames */
+.kl-tiles img{border:7px solid #fff;border-radius:16px;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 20px 38px rgba(0,0,0,.25)}
+.kl-tiles figure::before{content:"";position:absolute;inset:-9px;border:1.5px dashed rgba(226,65,43,.55);border-radius:22px;pointer-events:none;transition:inset .3s}
+.kl-tiles .t0::before{transform:rotate(-3deg)}.kl-tiles .t1::before{transform:rotate(3deg)}.kl-tiles .t2::before{transform:rotate(2deg)}.kl-tiles .t3::before{transform:rotate(-2deg)}
+.kl-tiles figure:hover::before{inset:-13px;border-style:solid}
+.kl-det div{border:5px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 12px 24px rgba(0,0,0,.18)}
+/* detail gallery v2 */
+.kl-det{grid-template-columns:repeat(2,minmax(0,250px));gap:18px}
+.kl-det div{position:relative;aspect-ratio:4/5;overflow:hidden}
+.kl-det div span{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 9px;background:linear-gradient(transparent,rgba(0,0,0,.65));color:#fff;font-size:.8rem;font-weight:500;opacity:0;transform:translateY(8px);transition:.3s}
+.kl-det div:hover span{opacity:1;transform:none}
+/* stronger animation */
+.kl-brand>*{animation:klDrop2 1s cubic-bezier(.2,1.6,.35,1) both,klWave 2.4s ease-in-out infinite;animation-delay:calc(var(--i)*.12s),calc(1.2s + var(--i)*.12s)}
+.kl-brand b{animation:klDrop2 1s cubic-bezier(.2,1.6,.35,1) both,klFlip 4s ease-in-out infinite;animation-delay:calc(var(--i)*.12s),calc(1.6s + var(--i)*.25s);box-shadow:0 10px 24px rgba(226,65,43,.4)}
+@keyframes klDrop2{0%{opacity:0;transform:translateY(-160px) rotate(-40deg) scale(.3)}60%{opacity:1}}
+@keyframes klWave{0%,100%{translate:0 0;rotate:0deg;scale:1}25%{translate:0 -16px;rotate:-6deg;scale:1.08}50%{translate:0 0;rotate:4deg;scale:1}}
+@keyframes klFlip{0%,70%,100%{rotate:y 0deg;translate:0 0}80%{rotate:y 180deg;translate:0 -10px}90%{rotate:y 360deg;translate:0 0}}
+.kl-tiles figure{animation:klTile .9s cubic-bezier(.2,1.3,.4,1) both,klBob 5s ease-in-out infinite}
+.kl-tiles .t0{animation-delay:1s,2s}.kl-tiles .t1{animation-delay:1.15s,2.6s}.kl-tiles .t2{animation-delay:1.3s,3.2s}.kl-tiles .t3{animation-delay:1.45s,3.8s}
+@keyframes klTile{from{opacity:0;transform:translateY(60px) scale(.8)}}
+@keyframes klBob{0%,100%{translate:0 0}50%{translate:0 -10px}}
+.kl-btn.big{animation:klPulse 1.8s ease-in-out infinite}
+@keyframes klPulse{0%,100%{box-shadow:0 10px 22px rgba(201,47,27,.35),0 0 0 0 rgba(226,65,43,.5)}50%{box-shadow:0 10px 22px rgba(201,47,27,.35),0 0 0 16px rgba(226,65,43,0)}}
+@media(prefers-reduced-motion:reduce){.kl-brand>*,.kl-tiles figure,.kl-btn.big{animation:none}}
