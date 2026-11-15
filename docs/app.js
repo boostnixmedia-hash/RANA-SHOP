@@ -64,7 +64,7 @@
     const c = RS.cat(p.cat);
     let size = (p.sizes || [])[0] || '', color = ((p.colors || [])[0] || [''])[0];
     app.innerHTML = `<div class="wrap pd">
-      <div class="main-img"><img src="${esc(p.img)}" alt="${esc(p.name)}"></div>
+      <div class="main-img zoom" id="zoomBox"><img src="${esc(p.img)}" alt="${esc(p.name)}"><span class="zhint">Hover to zoom</span></div>
       <div><div class="crumbs"><a href="#/">Home</a> / <a href="#/c/${p.cat}">${c ? c.name : ''}</a></div>
         <h1>${esc(p.name)}</h1>${priceHtml(p)}<p class="short">${esc(p.desc)}</p>
         ${p.colors && p.colors.length ? `<div class="opt-label">Colour: <span id="cName">${esc(color)}</span></div><div class="colors">${p.colors.map((x, i) => `<button type="button" class="${i ? '' : 'on'}" data-c="${esc(x[0])}" style="background:${esc(x[1])}" title="${esc(x[0])}"></button>`).join('')}</div>` : ''}
@@ -73,6 +73,10 @@
           <button class="btn" id="addBtn" style="flex:1">Add to cart</button></div>
         <button class="btn ghost block" id="buyBtn">Buy now</button>
         <div class="perks" style="margin-top:24px"><span>✓ Cash on Delivery all over Bangladesh</span><span>✓ Delivery in 2–4 days</span><span>✓ 7-day size exchange</span></div></div></div>`;
+    const zb = document.getElementById('zoomBox'), zi = zb.querySelector('img');
+    zb.onmousemove = e => { const r = zb.getBoundingClientRect(); zi.style.transformOrigin = ((e.clientX - r.left) / r.width * 100) + '% ' + ((e.clientY - r.top) / r.height * 100) + '%'; zb.classList.add('on'); };
+    zb.onmouseleave = () => zb.classList.remove('on');
+    zb.onclick = () => zb.classList.toggle('tap');
     app.querySelectorAll('.colors button').forEach(b => b.onclick = () => { app.querySelectorAll('.colors button').forEach(x => x.classList.remove('on')); b.classList.add('on'); color = b.dataset.c; document.getElementById('cName').textContent = color; });
     app.querySelectorAll('.sizes button').forEach(b => b.onclick = () => { app.querySelectorAll('.sizes button').forEach(x => x.classList.remove('on')); b.classList.add('on'); size = b.dataset.s; });
     const q = document.getElementById('qty');

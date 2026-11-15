@@ -107,6 +107,8 @@ function seed_all(): void {
 
     // ---- Real photo products (owner's own photos), newest and featured
     $real = [
+        ['Washed Graphic Tee', 't-shirts', 'n7', 1190, null, 450, $tops, ['Washed Grey', '#9a9ea4'], 'Heavy cotton tee with a sun-washed finish and bold front print.', ['new-season-2027']],
+        ['Light Blue Cargo Jeans', 'pants', 'n6', 2490, 2190, 1200, $waist, ['Light Blue', '#a9c4e0'], 'Relaxed straight-leg denim in a light wash with roomy cargo pockets.', ['new-season-2027']],
         ['Baggy Black Wash Jeans', 'pants', 'n5', 2690, 2390, 1300, $waist, ['Washed Black', '#2b2d31'], 'Wide baggy fit in washed black denim with seam detail down the leg.', ['new-season-2027']],
         ['Charcoal Wide-Leg Trouser', 'pants', 'n4', 2190, null, 1000, $waist, ['Charcoal', '#3c3d40'], 'Relaxed wide-leg trouser with drawstring waist and pressed front crease.', ['new-season-2027']],
         ['Black Zip Polo', 't-shirts', 'n3', 1490, 1290, 600, $tops, ['Black', '#161616'], 'Cotton pique polo with a hidden half zip and clean front seam.', ['premium-essentials']],

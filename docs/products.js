@@ -1,5 +1,53 @@
 window.SEED=[
  {
+  "id": 25,
+  "name": "Light Blue Cargo Jeans",
+  "slug": "light-blue-cargo-jeans",
+  "desc": "Relaxed straight-leg denim in a light wash with roomy cargo pockets.",
+  "price": 2490,
+  "sale": 2190,
+  "featured": 1,
+  "cat": "pants",
+  "img": "img/n6.webp",
+  "sizes": [
+   "28",
+   "30",
+   "32",
+   "34",
+   "36"
+  ],
+  "colors": [
+   [
+    "Light Blue",
+    "#a9c4e0"
+   ]
+  ]
+ },
+ {
+  "id": 26,
+  "name": "Washed Graphic Tee",
+  "slug": "washed-graphic-tee",
+  "desc": "Heavy cotton tee with a sun-washed finish and bold front print.",
+  "price": 1190,
+  "sale": null,
+  "featured": 1,
+  "cat": "t-shirts",
+  "img": "img/n7.webp",
+  "sizes": [
+   "S",
+   "M",
+   "L",
+   "XL",
+   "XXL"
+  ],
+  "colors": [
+   [
+    "Washed Grey",
+    "#9a9ea4"
+   ]
+  ]
+ },
+ {
   "id": 21,
   "name": "Zip-Front Denim Shirt",
   "slug": "zip-front-denim-shirt",

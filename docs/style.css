@@ -130,3 +130,9 @@ footer.ft{background:var(--ink);color:#d9d3c8;padding:60px 0 30px;margin-top:20p
 .card .ph img{filter:saturate(.95) contrast(1.02)}
 .card .ph::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);pointer-events:none}
 .cprice b.red{color:#111}.cprice em{background:#f3ead8;color:#7a5a22}
+.card .ph img{transition:transform .9s cubic-bezier(.2,.7,.2,1)}.card:hover .ph img{transform:scale(1.09)}
+.zoom{position:relative;overflow:hidden;cursor:zoom-in}.zoom img{transition:transform .25s ease-out}
+.zoom.on img,.zoom.tap img{transform:scale(2.1)}.zoom.tap{cursor:zoom-out}
+.zhint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:rgba(17,17,17,.75);color:#fff;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;padding:7px 14px;pointer-events:none;transition:opacity .3s}
+.zoom.on .zhint,.zoom.tap .zhint{opacity:0}
+@media(hover:none){.zhint::after{content:""}}
