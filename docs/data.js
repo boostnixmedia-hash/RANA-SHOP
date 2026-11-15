@@ -24,7 +24,9 @@ window.RS = (function () {
   function now(p) { return p.sale && p.sale < p.price ? p.sale : p.price; }
   // Email verification codes are sent with EmailJS (free plan). Fill these 3 values from emailjs.com to turn on real emails.
   // Shop contact shown to customers after an order and in the email.
-  const SHOP = { whatsapp: '01XXXXXXXXX' };
+  const SHOP = { whatsapp: '01XXXXXXXXX',
+    // Offer countdown on the homepage. Set a real end date/time, or '' to hide the timer.
+    offerEnd: '2026-11-30T23:59:00+06:00' };
   const EMAILJS = { publicKey: '', serviceId: '', templateId: '' };
   return {
     SHOP, EMAILJS, CATS, ls, products, saveProducts, slugify, money, esc, now,
