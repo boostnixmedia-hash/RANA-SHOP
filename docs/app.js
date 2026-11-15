@@ -47,6 +47,7 @@
     const showTimer = end && end > new Date();
     const charts = RS.CATS.filter(c => SIZE_CHART[c.slug] && ps.some(p => p.cat === c.slug));
     const quality = ['৬০ বার ধোয়ার পরও প্রিন্ট ও রং অক্ষত থাকে', 'প্রিমিয়াম কোয়ালিটি ফেব্রিক, আরামদায়ক', 'মজবুত সেলাই ও টেকসই ফিনিশিং', 'স্টাইলিশ ও ট্রেন্ডি ফিটিং', 'হাতে পেয়ে টাকা দিন, ৭ দিনে সাইজ বদল'];
+    const pick = {}; // key "id|size" -> qty
     app.innerHTML = `<div class="kl">
     <section class="kl-hero"><i class="pl a">+</i><i class="pl b">+</i><i class="pl c">+</i><i class="pl d">+</i>
       <div class="kl-welcome">WELCOME<br>TO</div><img class="kl-mk" src="img/logo-mark.png" alt="">
@@ -63,9 +64,25 @@
     ${charts.length ? `<section class="kl-sec kl-chart"><h2 class="c">সাইজ চার্ট</h2><p class="c muted">আপনার সঠিক সাইজ নির্বাচন করুন · মাপ ইঞ্চিতে দেওয়া হয়েছে</p>
       <div class="kl-tabs">${charts.map((c, i) => `<button type="button" class="${i ? '' : 'on'}" data-tab="${c.slug}">${c.name}</button>`).join('')}</div>
       ${charts.map((c, i) => `<table class="kl-tbl" data-t="${c.slug}" ${i ? 'hidden' : ''}>${SIZE_CHART[c.slug].map((r, k) => `<tr>${r.map(v => k ? `<td>${v}</td>` : `<th>${v}</th>`).join('')}</tr>`).join('')}</table>`).join('')}</section>` : ''}
-    <section class="kl-sec" id="order"><h2>অর্ডার করতে পছন্দের প্রোডাক্টে ক্লিক করুন</h2><p class="kl-how">প্রোডাক্টে ক্লিক করলে তার অর্ডার পেজ খুলবে, সেখানে সাইজ বেছে নিয়ে অর্ডার করুন।</p>
-      <div class="kl-prods">${ps.map(p => `<div class="kl-pc" data-id="${p.id}"><div class="im"><img src="${esc(p.img)}" alt="" loading="lazy">${p.sale && p.sale < p.price ? `<em>-${Math.round((1 - p.sale / p.price) * 100)}%</em>` : ''}</div>
-          <b>${esc(p.name)}</b><div class="pr">${p.sale && p.sale < p.price ? `<s>${money(p.price)}</s>` : ''}<span>${money(now(p))}</span></div><span class="kl-go">অর্ডার করুন</span></div>`).join('')}</div></section>
+    <section class="kl-sec" id="order"><h2>অর্ডার করতে নিচের ফর্মটি পূরণ করুন, এবং সাইজ সিলেক্ট করুন</h2><p class="kl-how">প্রোডাক্টের ছবিতে ক্লিক করলে তার অর্ডার পেজ খুলবে। সাইজে ক্লিক করলে সরাসরি এই অর্ডারে যোগ হবে, একসাথে একাধিক প্রোডাক্টও নিতে পারবেন।</p>
+      <form class="kl-form" id="klForm" novalidate>
+        <div class="kl-prods">${ps.map(p => { const so = p.soldOut || []; return `<div class="kl-pc" data-id="${p.id}"><div class="im"><img src="${esc(p.img)}" alt="" loading="lazy">${p.sale && p.sale < p.price ? `<em>-${Math.round((1 - p.sale / p.price) * 100)}%</em>` : ''}</div>
+          <span class="ok">✓ সিলেক্ট হয়েছে</span><b>${esc(p.name)}</b><div class="pr">${p.sale && p.sale < p.price ? `<s>${money(p.price)}</s>` : ''}<span>${money(now(p))}</span></div><small>সাইজ নির্বাচন করুন</small>
+          <div class="sz">${(p.sizes && p.sizes.length ? p.sizes : ['Free']).map(s => so.includes(s) ? `<button type="button" disabled>${esc(s)}</button>` : `<button type="button" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>`; }).join('')}</div>
+        <div class="kl-bill">
+          <div class="kl-in"><label>আপনার নাম <i>*</i><input name="name" placeholder="এখানে নাম লিখুন"></label>
+            <label>সম্পূর্ণ ঠিকানা <i>*</i><input name="address" placeholder="বাসা, রোড, এলাকা, জেলা"></label>
+            <label>মোবাইল নাম্বার <i>*</i><input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label>
+            <label>নোট (ঐচ্ছিক)<input name="note" placeholder="কিছু বলার থাকলে লিখুন"></label></div>
+          <div class="kl-sum"><h3>YOUR ORDER</h3><div id="klLines"></div>
+            <div class="row"><span>Subtotal</span><span id="klSub">৳0</span></div>
+            <div class="row ship"><span>Shipment</span><span><label><input type="radio" name="zone" value="inside" checked> ঢাকার ভিতরে: ৳70</label><label><input type="radio" name="zone" value="outside"> ঢাকার বাইরে: ৳130</label></span></div>
+            <div class="row tot"><span>Total</span><b id="klTot">৳0</b></div>
+            <div class="kl-cod">পণ্য হাতে পেয়ে টাকা দিবেন (Cash on Delivery)</div>
+            <p class="kl-err" id="klErr"></p>
+            <button class="kl-btn block">অর্ডার কনফার্ম করুন</button></div>
+        </div>
+      </form></section>
     </div>
     <div class="kl-lb" id="klLb" hidden><img alt=""><button type="button" aria-label="Close">×</button></div>`;
     // reveal sections and product cards as they scroll into view (one time)
@@ -81,7 +98,32 @@
     if (showTimer) { const tick = () => { let s = Math.max(0, Math.floor((end - new Date()) / 1000)); const el = id => document.getElementById(id); if (!el('tS')) return clearInterval(tm);
       el('tD').textContent = Math.floor(s / 86400); s %= 86400; el('tH').textContent = String(Math.floor(s / 3600)).padStart(2, '0'); s %= 3600; el('tM').textContent = String(Math.floor(s / 60)).padStart(2, '0'); el('tS').textContent = String(s % 60).padStart(2, '0'); };
       const tm = setInterval(tick, 1000); tick(); }
-    app.querySelectorAll('.kl-pc').forEach(c => c.onclick = () => { const p = ps.find(x => x.id === +c.dataset.id); if (p && p.slug) location.hash = '#/p/' + p.slug; });
+    const form = document.getElementById('klForm');
+    const zone = () => form.querySelector('input[name=zone]:checked').value;
+    const draw = () => {
+      const ls = Object.entries(pick).map(([k, q]) => { const [id, size] = k.split('|'); const p = ps.find(x => x.id === +id); return { k, p, size, q }; }).filter(l => l.p);
+      const sub = ls.reduce((a, l) => a + now(l.p) * l.q, 0); const ship = !ls.length ? 0 : zone() === 'inside' ? (sub >= 3000 ? 0 : 70) : 130;
+      document.getElementById('klLines').innerHTML = ls.length ? ls.map(l => `<div class="ln"><img src="${esc(l.p.img)}" alt=""><span>${esc(l.p.name)}${l.size !== 'Free' ? ' - ' + esc(l.size) : ''}</span><div class="q"><button type="button" data-k="${l.k}" data-d="-1">−</button>${l.q}<button type="button" data-k="${l.k}" data-d="1">+</button></div><b>${money(now(l.p) * l.q)}</b></div>`).join('') : '<p class="muted">উপরের প্রোডাক্ট থেকে সাইজ সিলেক্ট করুন</p>';
+      document.getElementById('klSub').textContent = money(sub); document.getElementById('klTot').textContent = money(sub + ship);
+      app.querySelectorAll('.kl-pc').forEach(c => { let any = false; c.querySelectorAll('.sz button[data-s]').forEach(b => { const on = !!pick[c.dataset.id + '|' + b.dataset.s]; b.classList.toggle('on', on); any = any || on; }); c.classList.toggle('on', any); });
+      app.querySelectorAll('#klLines [data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k; pick[k] = (pick[k] || 0) + +b.dataset.d; if (pick[k] <= 0) delete pick[k]; draw(); });
+      return { ls, sub, ship, total: sub + ship };
+    };
+    // tapping the photo or name opens that product's own order page (sizes below still add it straight to this order)
+    app.querySelectorAll('.kl-pc').forEach(c => c.onclick = e => { if (e.target.closest('.sz')) return;
+      const p = ps.find(x => x.id === +c.dataset.id); if (p && p.slug) location.hash = '#/p/' + p.slug; });
+    app.querySelectorAll('.kl-pc .sz button[data-s]').forEach(b => b.onclick = () => { const k = b.closest('.kl-pc').dataset.id + '|' + b.dataset.s; if (pick[k]) delete pick[k]; else pick[k] = 1; draw(); });
+    form.querySelectorAll('input[name=zone]').forEach(r => r.onchange = draw);
+    draw();
+    form.onsubmit = e => {
+      e.preventDefault(); const f = new FormData(form); const v = k => String(f.get(k) || '').trim(); const t = draw(); const err = document.getElementById('klErr');
+      const bad = !t.ls.length ? ['', 'অন্তত একটা প্রোডাক্টের সাইজ সিলেক্ট করুন'] : !v('name') ? ['name', 'আপনার নাম লিখুন'] : !v('address') ? ['address', 'সম্পূর্ণ ঠিকানা লিখুন'] : !/^(\+?88)?01[3-9]\d{8}$/.test(v('phone').replace(/[\s-]/g, '')) ? ['phone', 'সঠিক মোবাইল নম্বর লিখুন (01XXXXXXXXX)'] : null;
+      if (bad) { err.textContent = bad[1]; if (bad[0]) form.querySelector(`[name=${bad[0]}]`).focus(); else app.querySelector('.kl-prods').scrollIntoView({ behavior: 'smooth' }); return; }
+      err.textContent = ''; const orders = RS.orders(); const no = 'RS' + (1001 + orders.length);
+      orders.unshift({ no, date: new Date().toISOString(), name: v('name'), email: '', phone: v('phone'), address: v('address'), zone: zone(), note: v('note'), pay: 'Cash on Delivery', status: 'Pending',
+        items: t.ls.map(l => ({ name: l.p.name, img: l.p.img, color: ((l.p.colors || [])[0] || [''])[0], size: l.size === 'Free' ? '' : l.size, qty: l.q, price: now(l.p) })), sub: t.sub, ship: t.ship, total: t.total });
+      RS.saveOrders(orders); sendOrderMail(orders[0]); location.hash = '#/done/' + no;
+    };
   }
   function collection() {
     const ps = visible();
