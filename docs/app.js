@@ -54,7 +54,7 @@
       <h1 class="kl-brand"><span style="--i:0">R</span><span style="--i:1">A</span><b style="--i:2">N</b><span style="--i:3">A</span><span style="--i:4">S</span><span style="--i:5">H</span><b style="--i:6">O</b><span style="--i:7">P</span></h1>
       <div class="kl-sub"><span>CREATIVE LOOK</span><span>NEW SEASON '27</span></div>
       <p class="kl-hint">জুম করতে ছবিতে ক্লিক করুন</p>
-      <div class="kl-tiles">${tiles.map((p, i) => `<figure class="t${i}"><img src="${esc(p.img)}" alt="${esc(p.name)} - Rana Shop" ${i > 1 ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async" width="300" height="400" data-zoom="${esc(p.img)}"><figcaption>${/overshirt|jacket/i.test(p.slug) ? 'JACKET' : esc((RS.cat(p.cat) || {}).name || '').toUpperCase()}</figcaption><span class="hand"><svg viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-1a5 5 0 0 1-4.2-2.3L4.3 14.4a1.6 1.6 0 0 1 2.5-2L9 14.5"/></svg></span></figure>`).join('')}<div class="kl-rings"></div></div>
+      <div class="kl-tiles">${tiles.map((p, i) => `<figure class="t${i}"><img src="${esc(p.img)}" alt="${esc(p.name)} - Rana Shop" ${i > 1 ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async" width="300" height="400" data-zoom="${esc(p.img)}"><figcaption>${/overshirt|jacket/i.test(p.slug) ? 'JACKET' : esc((RS.cat(p.cat) || {}).name || '').toUpperCase()}</figcaption></figure>`).join('')}<div class="kl-rings"></div></div>
       <a class="kl-btn big" href="#order" data-go>ORDER NOW</a>
     </section>
     <section class="kl-sec kl-q"><h2>গুণমান</h2><ul>${quality.map(q => `<li>${q}</li>`).join('')}</ul><a class="kl-btn sm" href="#order" data-go>অর্ডার করুন</a></section>

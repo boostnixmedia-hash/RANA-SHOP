@@ -587,3 +587,4 @@ a.on,.filters a.on{border-color:var(--rd)}
 .side a.logo{display:flex;align-items:center;gap:10px;background:none}
 @media(max-width:900px){.side{padding:8px 12px}.side a.logo{padding:0 6px 0 0;flex:none}.side a.logo span{display:none}.side .mark-img{width:34px;height:34px}.side a.on,.side a:hover{border-left:0;border-bottom:2px solid var(--rd)}}
 @media(max-width:900px){.adm{align-content:start;grid-template-rows:auto 1fr}}
+.kl-tiles .hand{display:none!important}
