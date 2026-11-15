@@ -506,3 +506,42 @@ section.sec .grid{grid-template-columns:repeat(auto-fit,minmax(220px,300px));jus
 .kl-btn.big{animation:klPulse 1.8s ease-in-out infinite}
 @keyframes klPulse{0%,100%{box-shadow:0 10px 22px rgba(201,47,27,.35),0 0 0 0 rgba(226,65,43,.5)}50%{box-shadow:0 10px 22px rgba(201,47,27,.35),0 0 0 16px rgba(226,65,43,0)}}
 @media(prefers-reduced-motion:reduce){.kl-brand>*,.kl-tiles figure,.kl-btn.big{animation:none}}
+/* ===== ONE THEME: black + red + white, used across the whole site ===== */
+:root{--ink:#161616;--gold:#e2412b;--sale:#e2412b;--surface:#f4f4f4;--muted:#6b6b6b;--line:#e3e3e3;
+ --br:#e2412b;--br2:#c92f1b;--cream:#f6f6f6;--rd:#e2412b;--rd2:#c92f1b;--soft:#fdecea}
+body{background:#fff}
+.kl{background:#efefef}
+/* small accents */
+.tag{color:#fff}.tag.new{background:var(--rd);color:#fff}
+.cprice em{background:var(--soft);color:var(--rd2)}
+.h-hero-txt small{color:#fff;opacity:.85}
+.btn.light:hover{background:var(--rd);border-color:var(--rd);color:#fff}
+.qadd:hover{background:var(--rd);color:#fff}
+.h-strip{background:var(--surface);color:#444}.h-strip span+span::before{background:var(--rd)}
+.btn{background:#161616;border-color:#161616}.btn:hover{background:var(--rd);border-color:var(--rd)}
+.btn.ghost,.btn.outline{background:transparent}
+/* product page */
+.lp-gal,.lp-trust,.lp-deliv>div,.lp-avail>div,.lp-revs>div{border-color:var(--line)}
+.lp-h::after{background:var(--line)}
+.lp-cod{background:var(--soft);color:#161616}.lp-cod svg{stroke:var(--rd)}
+.lp-order{background:#f6f6f6;border-color:var(--line);box-shadow:0 14px 40px rgba(0,0,0,.07)}
+.lp-btn{background:linear-gradient(180deg,#ef5a3f,var(--rd2));box-shadow:0 8px 20px rgba(201,47,27,.3);border-radius:40px}
+.lp-colors,.lp-in,.lp-note,.lp-zone label,.lp-sizes button{border-color:#dcdcdc}
+.lp-in svg{stroke:#8a8a8a}
+.lp-sum{border-color:#d0d0d0}.lp-sum .tot b{color:var(--rd)}
+.lp-why-band{background:#161616}.lp-why-band svg{stroke:var(--rd)}.lp-why-band p{color:#bdbdbd}
+.lp-feats li,.lp-fab li,.lp-pts li,.lp-desc,.lp-deliv p{color:#333}
+.lp-thumbs button.on{border-color:var(--rd)}
+/* homepage form: no green */
+.kl-in input{background:#fff;border-color:#d6d6d6}
+.kl-cod{background:var(--soft);border-color:#f3c3bb}
+.kl-form{border-color:#cfcfcf;background:#f7f7f7;border-radius:12px}
+/* admin + other pages pick up the same vars */
+.pill.y{background:var(--soft);color:var(--rd2)}
+a.on,.filters a.on{border-color:var(--rd)}
+.adm{background:#f4f4f4}.side a.on,.side a:hover{border-left:3px solid var(--rd)}
+.crumbbar{background:#f6f6f6}
+.chart th,.lp-chart th{background:var(--rd);color:#fff}
+.h-express{background:radial-gradient(circle at 75% 50%,#5a1a10,#0d0d0d 60%)}
+.btn:disabled{background:#eee;border-color:#ddd;color:#999}
+.h-banner.dark,.h-banner.black .hb-txt{background:#161616}
