@@ -69,18 +69,21 @@
   function exportExcel() {
     const os = RS.orders();
     if (!os.length) { alert('No orders yet.'); return; }
-    const rows = os.map(o => {
-      const wa = String(o.phone || '').replace(/\D/g, '').replace(/^0/, '880');
-      return { 'Order No': o.no, 'Date': new Date(o.date).toLocaleString(), 'Customer': o.name, 'Phone': o.phone, 'WhatsApp': wa ? '+' + wa : '', 'WhatsApp link': wa ? 'https://wa.me/' + wa : '',
-        'Gmail': o.email || '', 'Address': o.address, 'Area': o.zone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka',
-        'Items': o.items.map(i => `${i.name} (${[i.color, i.size].filter(Boolean).join('/')}) x${i.qty}`).join(', '),
-        'Subtotal': o.sub, 'Delivery': o.ship, 'Total': o.total, 'Payment': o.pay, 'Status': o.status, 'Note': o.note || '' };
-    });
+    const wa = p => String(p || '').replace(/\D/g, '').replace(/^0/, '880');
+    const itemTxt = i => `${i.name}${[i.color, i.size].filter(Boolean).length ? ' (' + [i.color, i.size].filter(Boolean).join(' / ') + ')' : ''} x${i.qty}`;
+    const rows = os.map(o => { const d = new Date(o.date);
+      return { 'Order No': o.no, 'Date': d.toLocaleDateString('en-GB'), 'Time': d.toLocaleTimeString('en-GB'), 'Customer': o.name, 'Phone': o.phone, 'WhatsApp link': wa(o.phone) ? 'https://wa.me/' + wa(o.phone) : '',
+        'Address': o.address, 'Area': o.zone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka', 'Products': o.items.map(itemTxt).join(', '), 'Total Qty': o.items.reduce((n, i) => n + i.qty, 0),
+        'Subtotal': o.sub, 'Delivery': o.ship, 'Total': o.total, 'Payment': o.pay, 'Status': o.status, 'Note': o.note || '' }; });
+    // second sheet: one row per product so you can count sizes / products sold
+    const lines = []; os.forEach(o => o.items.forEach(i => lines.push({ 'Order No': o.no, 'Customer': o.name, 'Phone': o.phone, 'Product': i.name, 'Colour': i.color || '', 'Size': i.size || '', 'Qty': i.qty, 'Unit Price': i.price, 'Line Total': i.price * i.qty, 'Status': o.status })));
     const name = 'rana-shop-orders-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+    const widths = r => Object.keys(r[0]).map(k => ({ wch: Math.min(50, Math.max(k.length, ...r.map(x => String(x[k]).length)) + 2) }));
     if (window.XLSX) {
-      const ws = XLSX.utils.json_to_sheet(rows);
-      ws['!cols'] = Object.keys(rows[0]).map(k => ({ wch: Math.min(50, Math.max(k.length, ...rows.map(r => String(r[k]).length)) + 2) }));
-      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Orders'); XLSX.writeFile(wb, name);
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(rows); ws['!cols'] = widths(rows); XLSX.utils.book_append_sheet(wb, ws, 'Orders');
+      const w2 = XLSX.utils.json_to_sheet(lines); w2['!cols'] = widths(lines); XLSX.utils.book_append_sheet(wb, w2, 'Products');
+      XLSX.writeFile(wb, name);
     } else {
       const keys = Object.keys(rows[0]); const q = v => '"' + String(v).replace(/"/g, '""') + '"';
       const csv = '\ufeff' + [keys.map(q).join(','), ...rows.map(r => keys.map(k => q(r[k])).join(','))].join('\r\n');
