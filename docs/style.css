@@ -246,3 +246,20 @@ section.sec .grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
 section.sec .grid{grid-template-columns:repeat(auto-fit,minmax(220px,300px));justify-content:center}
 @media(max-width:560px){section.sec .grid{grid-template-columns:repeat(2,1fr)}
 .buy{gap:8px}.buy .qty button{width:32px}.buy .qty input{width:30px}.buy .btn{padding:14px 10px;letter-spacing:.12em;white-space:nowrap;font-size:.72rem}.heart.sq{width:46px}}
+/* home polish v4 */
+.h-hero{gap:3px}
+.h-hero::after{background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.25) 60%,rgba(0,0,0,.78) 100%)}
+.h-hero-txt{right:0;left:0;top:auto;bottom:56px;transform:none;margin:0 auto;padding:0 20px;animation:heroIn 1s ease both}
+.h-hero-txt h1{text-shadow:0 2px 24px rgba(0,0,0,.35)}
+@keyframes heroIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.h-strip{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 28px}
+.h-strip span{position:relative}.h-strip span+span::before{content:"";position:absolute;left:-16px;top:50%;width:4px;height:4px;border-radius:50%;background:#b89b5e;transform:translateY(-50%)}
+.h-title{letter-spacing:.32em}
+.htile span{text-align:center;line-height:1.5}.htile span em{display:block;font-style:normal;letter-spacing:.04em;color:#8a8378;font-size:.78rem;margin-top:2px}
+.h-cats a span{transition:letter-spacing .4s}.h-cats a:hover span{letter-spacing:.32em}
+@media(max-width:560px){
+ .topbar{font-size:.7rem;padding:7px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .h-hero{height:78vh}.h-hero-txt{bottom:36px}.h-hero-txt h1{font-size:2.3rem;letter-spacing:.08em}
+ .h-strip{flex-direction:column;gap:4px;font-size:.72rem}.h-strip span+span::before{display:none}
+}
+@media(max-width:560px){.topbar .tb2{display:none}}

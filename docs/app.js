@@ -37,14 +37,14 @@
     const by = s => ps.find(p => p.slug === s);
     const pick = (...s) => s.map(by).filter(Boolean);
     const must = ps.filter(p => p.featured).slice(0, 6);
-    const tile = (p, lbl) => p ? `<a class="htile" href="#/p/${esc(p.slug)}"><img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy"><span>${esc(lbl || p.name)}</span></a>` : '';
+    const tile = (p, lbl) => p ? `<a class="htile" href="#/p/${esc(p.slug)}"><img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy"><span>${esc(lbl || p.name)}<em>${RS.money(p.sale && p.sale < p.price ? p.sale : p.price)}</em></span></a>` : '';
     const heroImgs = pick('zip-front-denim-shirt', 'embroidered-cuff-panjabi', 'tie-dye-overshirt').map(p => p.img);
     const denim = pick('baggy-black-wash-jeans', 'light-blue-cargo-jeans', 'washed-graphic-tee');
     const black = pick('black-zip-polo', 'charcoal-wide-leg-trouser');
     app.innerHTML = `
     <section class="h-hero">${heroImgs.map(s => `<div style="background-image:url('${s}')"></div>`).join('')}
       <div class="h-hero-txt"><small>Rana Shop</small><h1>NEW SEASON '27</h1><p>Clean cuts, rich fabrics, made for everyday Dhaka.</p><div><a class="btn light" href="#/shop">Shop now</a><a class="btn outline" href="#/c/shirts">Shirts</a></div></div></section>
-    <div class="h-strip">Cash on Delivery all over Bangladesh · Free delivery inside Dhaka over ৳3,000 · 7-day easy exchange</div>
+    <div class="h-strip"><span>Cash on Delivery all over Bangladesh</span><span>Free delivery inside Dhaka over ৳3,000</span><span>7-day easy exchange</span></div>
     <section class="h-must"><h2 class="h-title">MUST HAVES</h2><div class="h-row">${must.map(p => tile(p)).join('')}</div></section>
     ${denim.length >= 2 ? `<section class="h-banner dark"><div class="hb-imgs">${denim.map(p => `<a href="#/p/${esc(p.slug)}" style="background-image:url('${p.img}')"></a>`).join('')}</div>
       <div class="hb-txt right"><h2>DENIM<br><small>DESTINATION</small></h2><a class="btn light" href="#/c/pants">Shop pants</a></div></section>` : ''}
