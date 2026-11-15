@@ -144,7 +144,7 @@
   function done(no) {
     app.innerHTML = `<div class="wrap done"><div class="mark" style="margin:0 auto 22px;width:64px;height:64px;font-size:2rem">✓</div><h1>Thank you!</h1>
       <p style="color:var(--muted);margin-bottom:8px">Your order <b>${esc(no)}</b> has been placed.</p><p style="color:var(--muted);margin-bottom:28px">We will call you soon to confirm.</p>
-      <a class="btn" href="#/shop">Continue shopping</a> <a class="btn ghost" href="admin/">See it in admin</a></div>`;
+      <a class="btn" href="#/shop">Continue shopping</a></div>`;
   }
   function route() {
     const h = location.hash.replace(/^#\/?/, '').split('/');

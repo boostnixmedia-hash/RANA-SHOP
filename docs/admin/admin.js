@@ -12,10 +12,9 @@
       <div class="logo" style="justify-content:center;margin-bottom:24px"><img class="mark-img" src="../img/logo-mark.png" alt=""><span style="font-size:1.3rem">RANA SHOP</span></div>
       <h1 style="font-family:var(--bf);font-size:1.2rem;font-weight:500;text-align:center;margin-bottom:20px">Admin login</h1>
       ${err ? `<p style="color:var(--sale);margin-bottom:12px;font-size:.9rem">${err}</p>` : ''}
-      <label>Email<input name="email" type="email" required value="${EMAIL}"></label>
+      <label>Email<input name="email" type="email" required autocomplete="username"></label>
       <label>Password<input name="pass" type="password" required></label>
-      <button class="btn block">Log in</button>
-      <p style="font-size:.8rem;color:var(--muted);margin-top:16px;text-align:center">Demo password: <b>${PASS}</b></p></form></div>`;
+      <button class="btn block">Log in</button></form></div>`;
     document.getElementById('lf').onsubmit = e => {
       e.preventDefault(); const f = new FormData(e.target);
       if (f.get('email').trim().toLowerCase() === EMAIL && f.get('pass') === PASS) { sessionStorage.setItem('rs_admin', '1'); route(); }
