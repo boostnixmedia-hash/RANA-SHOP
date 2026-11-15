@@ -128,6 +128,7 @@
       <div class="box"><h2>Sizes & colours</h2>
         <label>Sizes (separate with commas)<input name="sizes" id="sizes" value="${esc(d.sizes.join(', '))}" placeholder="S, M, L, XL"></label>
         <div class="chips" style="margin:-6px 0 16px"><button type="button" data-z="S, M, L, XL, XXL">Shirt / T-shirt</button><button type="button" data-z="28, 30, 32, 34, 36">Pant</button><button type="button" data-z="39, 40, 41, 42, 43, 44">Shoe</button></div>
+        <div style="font-size:.85rem;margin-bottom:6px">Sold out sizes <small style="color:var(--muted)">(tap to mark out of stock)</small></div><div class="chips" id="soChips" style="margin:0 0 16px"></div>
         <div style="font-size:.85rem;margin-bottom:8px">Colours</div><div id="cols"></div><button type="button" class="btn ghost sm" id="addCol">+ Add colour</button></div></div>
       <div><div class="box"><label>Status<select name="status"><option value="active">Active (visible on website)</option><option value="draft" ${d.status === 'draft' ? 'selected' : ''}>Draft (hidden)</option></select></label>
         <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="featured" style="width:auto;margin:0" ${d.featured ? 'checked' : ''}> Featured product</label>
@@ -135,11 +136,16 @@
       <div class="box"><h2>Price</h2><label>Regular price (৳) *<input name="price" type="number" min="1" required value="${esc(d.price)}"></label>
         <label>Sale price (৳) <small style="color:var(--muted)">(optional)</small><input name="sale" type="number" min="0" value="${esc(d.sale || '')}"></label></div>
       <div class="box"><h2>Category</h2><select name="cat">${RS.CATS.map(c => `<option value="${c.slug}" ${c.slug === d.cat ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div></div></form>`);
+    let soldOut = [...(d.soldOut || [])];
+    const drawSo = () => { const sz = document.getElementById('sizes').value.split(',').map(s => s.trim()).filter(Boolean); soldOut = soldOut.filter(s => sz.includes(s));
+      document.getElementById('soChips').innerHTML = sz.length ? sz.map(s => `<button type="button" class="${soldOut.includes(s) ? 'so' : ''}" data-so="${esc(s)}">${esc(s)}</button>`).join('') : '<small style="color:var(--muted)">Add sizes first</small>';
+      root.querySelectorAll('[data-so]').forEach(b => b.onclick = () => { const s = b.dataset.so; soldOut = soldOut.includes(s) ? soldOut.filter(x => x !== s) : [...soldOut, s]; drawSo(); }); };
+    document.getElementById('sizes').addEventListener('input', drawSo); drawSo();
     const cols = document.getElementById('cols');
     const addCol = (n = '', h = '#222222') => { const r = document.createElement('div'); r.className = 'color-row'; r.innerHTML = `<input class="cn" placeholder="Colour name" value="${esc(n)}"><input type="color" class="ch" value="${esc(h)}"><button type="button" class="btn ghost sm">✕</button>`; r.querySelector('button').onclick = () => r.remove(); cols.appendChild(r); };
     d.colors.forEach(c => addCol(c[0], c[1]));
     document.getElementById('addCol').onclick = () => addCol();
-    root.querySelectorAll('[data-z]').forEach(b => b.onclick = () => { document.getElementById('sizes').value = b.dataset.z; });
+    root.querySelectorAll('[data-z]').forEach(b => b.onclick = () => { document.getElementById('sizes').value = b.dataset.z; drawSo(); });
     document.getElementById('file').onchange = e => {
       const f = e.target.files[0]; if (!f) return;
       const r = new FileReader(); r.onload = () => { const im = new Image(); im.onload = () => {
@@ -154,7 +160,7 @@
       const list = RS.products(); const name = f.get('name').trim();
       let slug = RS.slugify(name), i = 2; while (list.some(x => x.slug === slug && (!p || x.id !== p.id))) slug = RS.slugify(name) + '-' + i++;
       const data = { name, slug, desc: f.get('desc').trim(), price, sale, cat: f.get('cat'), img, status: f.get('status'), featured: f.get('featured') ? 1 : 0,
-        sizes: f.get('sizes').split(',').map(s => s.trim()).filter(Boolean), colors: [...cols.children].map(r => [r.querySelector('.cn').value.trim(), r.querySelector('.ch').value]).filter(c => c[0]) };
+        sizes: f.get('sizes').split(',').map(s => s.trim()).filter(Boolean), soldOut, colors: [...cols.children].map(r => [r.querySelector('.cn').value.trim(), r.querySelector('.ch').value]).filter(c => c[0]) };
       if (p) Object.assign(list.find(x => x.id === p.id), data);
       else list.unshift({ id: Math.max(0, ...list.map(x => x.id)) + 1, isNew: true, ...data });
       if (RS.saveProducts(list)) { toast(p ? 'Product saved' : 'Product added'); location.hash = '#/products'; }

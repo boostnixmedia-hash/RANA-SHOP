@@ -25,7 +25,8 @@
     if (!h && !q) return;
     e.preventDefault(); e.stopPropagation();
     if (h) { const id = +h.dataset.wish; let w = wish(); const on = !w.includes(id); w = on ? [...w, id] : w.filter(x => x !== id); RS.ls.set('rs_wish', w); h.classList.toggle('on', on); h.textContent = on ? '♥' : '♡'; toast(on ? 'Saved to wishlist' : 'Removed from wishlist'); }
-    if (q) { const p = RS.products().find(x => x.id === +q.dataset.add); if (!p) return; const color = ((p.colors || [])[0] || [''])[0], size = (p.sizes || [])[0] || '';
+    if (q) { const p = RS.products().find(x => x.id === +q.dataset.add); if (!p) return; const color = ((p.colors || [])[0] || [''])[0], size = (p.sizes || []).find(s => !(p.soldOut || []).includes(s)) || '';
+      if (p.sizes && p.sizes.length && !size) { toast('Out of stock'); return; }
       const cart = RS.cart(); const key = p.id + '|' + color + '|' + size; const l = cart.find(x => x.key === key); if (l) l.qty++; else cart.push({ key, id: p.id, color, size, qty: 1 });
       RS.saveCart(cart); updateCount(); toast('Added: ' + p.name + (size ? ' (' + size + ')' : '')); }
   });
@@ -80,7 +81,7 @@
     if (!p) { app.innerHTML = '<div class="wrap empty"><h1>Product not found</h1><p><a class="btn" href="#/shop">Back to shop</a></p></div>'; return; }
     const c = RS.cat(p.cat);
     const imgs = [p.img, ...(p.images || [])].filter(Boolean);
-    let size = (p.sizes || [])[0] || '', color = ((p.colors || [])[0] || [''])[0], cur = 0;
+    const so = p.soldOut || []; let size = (p.sizes || []).find(s => !so.includes(s)) || '', color = ((p.colors || [])[0] || [''])[0], cur = 0;
     // recently viewed
     let rv = RS.ls.get('rs_recent', []).filter(id => id !== p.id); rv.unshift(p.id); RS.ls.set('rs_recent', rv.slice(0, 10));
     const recent = rv.slice(1).map(id => visible().find(x => x.id === id)).filter(Boolean).slice(0, 5);
@@ -95,10 +96,10 @@
           ${imgs.length > 1 ? '<button type="button" class="arw l" data-d="-1">‹</button><button type="button" class="arw r" data-d="1">›</button>' : ''}</div>
       </div>
       <div class="pinfo"><h1>${esc(p.name)}</h1>${priceHtml(p)}<p class="short">${esc(p.desc)}</p>
-        ${p.colors && p.colors.length ? `<div class="opt-label">Colour: <span id="cName">${esc(color)}</span></div><div class="colors">${p.colors.map((x, i) => `<button type="button" class="${i ? '' : 'on'}" data-c="${esc(x[0])}" style="background:${esc(x[1])}" title="${esc(x[0])}"></button>`).join('')}</div>` : ''}
-        ${p.sizes && p.sizes.length ? `<div class="opt-label">Size: <span id="sName">${esc(size)}</span>${chart ? ' <a href="#" id="chartLink" class="chartlink">Size chart</a>' : ''}</div><div class="sizes">${p.sizes.map((s, i) => `<button type="button" class="${i ? '' : 'on'}" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
+        ${p.colors && p.colors.length ? `<div class="opt-label">Colour: <span id="cName">${esc(color)}</span></div><div class="colors sw2">${p.colors.map((x, i) => `<button type="button" class="${i ? '' : 'on'}" data-c="${esc(x[0])}" style="background:${esc(x[1])}" title="${esc(x[0])}"></button>`).join('')}</div>` : ''}
+        ${p.sizes && p.sizes.length ? `<div class="opt-label">Size: <span id="sName">${esc(size)}</span>${chart ? ' <a href="#" id="chartLink" class="chartlink">Size chart</a>' : ''}</div><div class="sizes sz2">${p.sizes.map(s => so.includes(s) ? `<button type="button" class="out" disabled title="Out of stock">${esc(s)}</button>` : `<button type="button" class="${s === size ? 'on' : ''}" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
         <div class="buy"><div class="qty"><button type="button" data-q="-1">−</button><input id="qty" value="1" inputmode="numeric"><button type="button" data-q="1">+</button></div>
-          <button class="btn" id="addBtn" style="flex:1">Add to cart</button><button type="button" class="heart sq ${wish().includes(p.id) ? 'on' : ''}" data-wish="${p.id}">${wish().includes(p.id) ? '♥' : '♡'}</button></div>
+          <button class="btn" id="addBtn" style="flex:1" ${p.sizes && p.sizes.length && !size ? 'disabled' : ''}>${p.sizes && p.sizes.length && !size ? 'Out of stock' : 'Add to cart'}</button><button type="button" class="heart sq ${wish().includes(p.id) ? 'on' : ''}" data-wish="${p.id}">${wish().includes(p.id) ? '♥' : '♡'}</button></div>
         <button class="btn ghost block" id="buyBtn">Buy now</button>
         <div class="acc">
           <details open><summary>Description & Size Chart</summary><div class="acc-b"><p>${esc(p.desc)}</p><ul><li>Premium quality fabric</li><li>Colour-fast, pre-washed</li><li>Machine wash cold, dry in shade</li></ul>
@@ -111,7 +112,7 @@
     ${related.length ? `<section class="sec" style="padding-top:20px"><div class="wrap"><div class="sec-head"><h2>You may also like</h2><a href="#/c/${p.cat}">View all</a></div><div class="grid">${related.map(card).join('')}</div></div></section>` : ''}
     ${recent.length ? `<section class="rv"><h3>Recently viewed</h3><div class="rv-row">${recent.map(x => `<a href="#/p/${esc(x.slug)}"><img src="${esc(x.img)}" alt=""><span>${esc(x.name)}</span></a>`).join('')}</div></section>` : ''}
     <div class="stickybar" id="sticky"><div class="wrap sb-in"><img src="${esc(p.img)}" alt=""><div class="sb-t"><b>${esc(p.name)}</b><span>${money(now(p))}</span></div>
-      ${p.sizes && p.sizes.length ? `<select id="sbSize">${p.sizes.map(s => `<option>${esc(s)}</option>`).join('')}</select>` : ''}<button class="btn" id="sbAdd">Add to cart</button></div></div>`;
+      ${p.sizes && p.sizes.length ? `<select id="sbSize">${p.sizes.filter(s => !so.includes(s)).map(s => `<option>${esc(s)}</option>`).join('')}</select>` : ''}<button class="btn" id="sbAdd">Add to cart</button></div></div>`;
     const zb = document.getElementById('zoomBox'), zi = document.getElementById('mainImg');
     zb.onmousemove = e => { if (e.target.closest('.arw')) return; const r = zb.getBoundingClientRect(); zi.style.transformOrigin = ((e.clientX - r.left) / r.width * 100) + '% ' + ((e.clientY - r.top) / r.height * 100) + '%'; zb.classList.add('on'); };
     zb.onmouseleave = () => zb.classList.remove('on');
@@ -121,11 +122,12 @@
     app.querySelectorAll('.arw').forEach(b => b.onclick = e => { e.stopPropagation(); show(cur + +b.dataset.d); });
     app.querySelectorAll('.colors button').forEach(b => b.onclick = () => { app.querySelectorAll('.colors button').forEach(x => x.classList.remove('on')); b.classList.add('on'); color = b.dataset.c; document.getElementById('cName').textContent = color; });
     const setSize = s => { size = s; app.querySelectorAll('.sizes button').forEach(x => x.classList.toggle('on', x.dataset.s === s)); const sn = document.getElementById('sName'); if (sn) sn.textContent = s; const ss = document.getElementById('sbSize'); if (ss) ss.value = s; };
-    app.querySelectorAll('.sizes button').forEach(b => b.onclick = () => setSize(b.dataset.s));
+    app.querySelectorAll('.sizes button[data-s]').forEach(b => b.onclick = () => setSize(b.dataset.s));
     const cl = document.getElementById('chartLink'); if (cl) cl.onclick = e => { e.preventDefault(); const d = app.querySelector('.acc details'); d.open = true; document.getElementById('sizeChart').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
     const q = document.getElementById('qty');
     app.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { q.value = Math.max(1, (parseInt(q.value) || 1) + +b.dataset.q); });
     const add = () => {
+      if (p.sizes && p.sizes.length && !size) { toast('Sorry, this item is out of stock'); return; }
       const cart = RS.cart(); const key = p.id + '|' + color + '|' + size;
       const line = cart.find(l => l.key === key); const n = Math.max(1, parseInt(q.value) || 1);
       if (line) line.qty += n; else cart.push({ key, id: p.id, color, size, qty: n });
