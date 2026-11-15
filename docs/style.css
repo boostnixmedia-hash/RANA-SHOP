@@ -569,3 +569,21 @@ a.on,.filters a.on{border-color:var(--rd)}
 .kl-tiles figcaption{color:#161616;font-family:'Poppins',sans-serif!important;font-weight:600;letter-spacing:.35em;font-size:.8rem}
 .kl-det div{border-color:#161616}
 .kl-tiles img{height:auto}
+/* tiles like reference: straight cards, soft shadow, glowing hand icons */
+.kl-tiles img{border:0;border-radius:12px;transform:none!important;box-shadow:0 16px 30px rgba(0,0,0,.3)}
+.kl-tiles figure::before{display:none}
+.kl-tiles img:hover{transform:scale(1.03)!important}
+.kl-tiles .hand{position:absolute;z-index:3;width:38px;height:38px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 3px rgba(90,160,255,.55),0 0 16px 4px rgba(90,160,255,.75);animation:klTap 1.6s ease-in-out infinite}
+.kl-tiles .hand svg{width:24px;height:24px;fill:#fff;stroke:#161616;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.kl-tiles .t0 .hand{left:-18px;top:-16px}.kl-tiles .t1 .hand{right:-18px;top:-16px}.kl-tiles .t2 .hand{left:-18px;bottom:-16px}.kl-tiles .t3 .hand{right:-18px;bottom:-16px}
+.kl-tiles .t1 .hand svg,.kl-tiles .t3 .hand svg{transform:scaleX(-1)}
+@keyframes klTap{0%,100%{transform:scale(1)}50%{transform:scale(.85)}}
+.kl-tiles figcaption{font-family:'Cormorant Garamond',serif!important;font-weight:600;letter-spacing:.45em;color:#333}
+@media(max-width:640px){.kl-tiles .hand{width:32px;height:32px}.kl-tiles .hand svg{width:20px;height:20px}}
+@media(prefers-reduced-motion:reduce){.kl-tiles .hand{animation:none}}
+/* tile size like reference */
+.kl-tiles{max-width:440px;gap:44px 64px}
+@media(max-width:640px){.kl-tiles{max-width:300px;padding:0;gap:30px 40px}}
+.side a.logo{display:flex;align-items:center;gap:10px;background:none}
+@media(max-width:900px){.side{padding:8px 12px}.side a.logo{padding:0 6px 0 0;flex:none}.side a.logo span{display:none}.side .mark-img{width:34px;height:34px}.side a.on,.side a:hover{border-left:0;border-bottom:2px solid var(--rd)}}
+@media(max-width:900px){.adm{align-content:start;grid-template-rows:auto 1fr}}
