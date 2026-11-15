@@ -1,29 +1,5 @@
 window.SEED=[
  {
-  "id": 21,
-  "name": "Iridescent High-Top Sneaker",
-  "slug": "iridescent-high-top-sneaker",
-  "desc": "Patent high-top sneaker with an iridescent finish and a translucent icy sole.",
-  "price": 8990,
-  "sale": 7990,
-  "featured": 1,
-  "cat": "shoes",
-  "img": "img/photo-shoe.webp",
-  "sizes": [
-   "40",
-   "41",
-   "42",
-   "43",
-   "44"
-  ],
-  "colors": [
-   [
-    "Olive Gold",
-    "#6b6a2e"
-   ]
-  ]
- },
- {
   "id": 17,
   "name": "Embroidered Cuff Panjabi",
   "slug": "embroidered-cuff-panjabi",
