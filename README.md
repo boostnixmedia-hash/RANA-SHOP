@@ -21,3 +21,8 @@ Requirements: PHP 8.0+ with PDO MySQL, GD (WebP), cURL, mbstring. MySQL 5.7+ / M
 Home page, categories, search, product page with size/colour picker, cart, checkout (Cash on Delivery, bKash, Nagad, card via SSLCommerz), order tracking, customer accounts, wishlist.
 
 `app/config.php` and `app/secrets.php` are created by the installer and must never be committed.
+
+## Live demo (GitHub Pages)
+A static demo is in `docs/` (no PHP needed). Products and orders added there are saved only in that browser.
+- Website: https://boostnixmedia-hash.github.io/RANA-SHOP/
+- Admin: https://boostnixmedia-hash.github.io/RANA-SHOP/admin/ (demo login: admin@ranashop.com / admin123)
