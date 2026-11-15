@@ -76,70 +76,138 @@
     pants: [['Size', 'Waist (in)', 'Hip (in)', 'Length (in)'], ['28', '28', '38', '40'], ['30', '30', '40', '40.5'], ['32', '32', '42', '41'], ['34', '34', '44', '41.5'], ['36', '36', '46', '42']],
     shoes: [['Size (EU)', 'UK', 'Foot length (cm)'], ['40', '6', '25.5'], ['41', '7', '26'], ['42', '8', '26.5'], ['43', '9', '27.5'], ['44', '10', '28']],
   };
+  const INFO = {
+    shirts: { feats: ['প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক', 'আরামদায়ক ও বাতাস চলাচল করে', 'রং সহজে ওঠে না', 'মজবুত সেলাই', 'রেগুলার ফিট', 'অফিস ও ক্যাজুয়াল দুটোতেই মানানসই'], fabric: [['Fabric', '100% Cotton'], ['GSM', '140-160'], ['Fabric type', 'Woven'], ['Fit type', 'Regular fit']] },
+    pants: { feats: ['প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক', 'টেকসই ও দীর্ঘস্থায়ী', 'রং সহজে ওঠে না', 'মজবুত সেলাই', 'আরামদায়ক ফিট', 'সব ঋতুতে পরার উপযোগী'], fabric: [['Fabric', '98% Cotton, 2% Spandex'], ['Weight', '12 oz'], ['Fabric type', 'Denim / Twill'], ['Fit type', 'Relaxed fit']] },
+    't-shirts': { feats: ['প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক', 'নরম, আরামদায়ক ও বাতাস চলাচল করে', '৬০ ওয়াশেও প্রিন্ট নষ্ট হয় না', 'মজবুত সেলাই', 'ওভারসাইজ / রেগুলার ফিট', 'স্টাইলিশ ও ট্রেন্ডি লুক'], fabric: [['Fabric', '100% Cotton'], ['GSM', '180-220'], ['Fabric type', 'Single jersey'], ['Fit type', 'Oversized fit']] },
+    shoes: { feats: ['প্রিমিয়াম লেদার', 'নরম ও আরামদায়ক সোল', 'হালকা ওজন', 'মজবুত সেলাই', 'পিছলে যায় না', 'সব পোশাকের সাথে মানানসই'], fabric: [['Upper', 'PU Leather'], ['Sole', 'Rubber'], ['Lining', 'Soft mesh'], ['Closure', 'Lace-up']] },
+  };
+  const ICO = {
+    q: '<svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg>',
+    ok: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></svg>',
+    van: '<svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>',
+    bike: '<svg viewBox="0 0 24 24"><circle cx="6" cy="16" r="3"/><circle cx="18" cy="16" r="3"/><path d="M6 16l4-7h5l3 7M10 9l-1-3H7M15 9l1-3h2"/></svg>',
+    cash: '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="11" rx="1.5"/><circle cx="12" cy="12.5" r="2.5"/></svg>',
+    ret: '<svg viewBox="0 0 24 24"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>',
+    lock: '<svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="1.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
+    user: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+    phone: '<svg viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></svg>',
+    mail: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="1.5"/><path d="M3.5 6l8.5 7 8.5-7"/></svg>',
+    pin: '<svg viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-12a7 7 0 0 0-14 0c0 5.7 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
+    tag: '<svg viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8" r="1.4"/></svg>',
+  };
   function product(slug) {
     const p = visible().find(x => x.slug === slug);
     if (!p) { app.innerHTML = '<div class="wrap empty"><h1>Product not found</h1><p><a class="btn" href="#/shop">Back to shop</a></p></div>'; return; }
     const c = RS.cat(p.cat);
+    const info = INFO[p.cat] || INFO.shirts;
+    const feats = (p.features && p.features.length) ? p.features : info.feats;
+    const fabric = (p.fabric && p.fabric.length) ? p.fabric : info.fabric;
     const imgs = [p.img, ...(p.images || [])].filter(Boolean);
-    const so = p.soldOut || []; let size = (p.sizes || []).find(s => !so.includes(s)) || '', color = ((p.colors || [])[0] || [''])[0], cur = 0;
-    // recently viewed
+    const so = p.soldOut || []; let size = (p.sizes || []).find(s => !so.includes(s)) || '', color = ((p.colors || [])[0] || [''])[0], cur = 0, zone = 'inside';
     let rv = RS.ls.get('rs_recent', []).filter(id => id !== p.id); rv.unshift(p.id); RS.ls.set('rs_recent', rv.slice(0, 10));
-    const recent = rv.slice(1).map(id => visible().find(x => x.id === id)).filter(Boolean).slice(0, 5);
     const related = visible().filter(x => x.cat === p.cat && x.id !== p.id).slice(0, 4);
     const chart = SIZE_CHART[p.cat];
-    const sku = 'RS-' + String(p.cat).slice(0, 2).toUpperCase() + '-' + String(p.id).padStart(4, '0');
+    const off = p.sale && p.sale < p.price ? Math.round((1 - p.sale / p.price) * 100) : 0;
+    const price = now(p);
+    const noStock = p.sizes && p.sizes.length && !size;
+    // close-up detail shots: real extra photos first, then zoomed crops of the main photo
+    const crops = ['50% 30%', '30% 70%', '70% 55%', '50% 90%'];
+    const details = imgs.length >= 4 ? imgs.slice(0, 4).map(s => [s, 'cover', 'center']) : [...imgs.slice(1).map(s => [s, 'cover', 'center']), ...crops.map(pos => [p.img, '230%', pos])].slice(0, 4);
     app.innerHTML = `<div class="crumbbar"><div class="wrap crumbs"><a href="#/">Home</a> › <a href="#/c/${p.cat}">${c ? c.name : ''}</a> › <span>${esc(p.name)}</span></div></div>
-    <div class="wrap pd pd2">
-      <div class="gal ${imgs.length > 1 ? '' : 'one'}">
-        <div class="thumbs">${imgs.map((s, i) => `<button type="button" class="${i ? '' : 'on'}" data-i="${i}"><img src="${esc(s)}" alt=""></button>`).join('')}</div>
-        <div class="main-img zoom" id="zoomBox"><img id="mainImg" src="${esc(imgs[0])}" alt="${esc(p.name)}"><span class="zhint">Hover to zoom</span>
-          ${imgs.length > 1 ? '<button type="button" class="arw l" data-d="-1">‹</button><button type="button" class="arw r" data-d="1">›</button>' : ''}</div>
-      </div>
-      <div class="pinfo"><h1>${esc(p.name)}</h1>${priceHtml(p)}<p class="short">${esc(p.desc)}</p>
-        ${p.colors && p.colors.length ? `<div class="opt-label">Colour: <span id="cName">${esc(color)}</span></div><div class="colors sw2">${p.colors.map((x, i) => `<button type="button" class="${i ? '' : 'on'}" data-c="${esc(x[0])}" style="background:${esc(x[1])}" title="${esc(x[0])}"></button>`).join('')}</div>` : ''}
-        ${p.sizes && p.sizes.length ? `<div class="opt-label">Size: <span id="sName">${esc(size)}</span>${chart ? ' <a href="#" id="chartLink" class="chartlink">Size chart</a>' : ''}</div><div class="sizes sz2">${p.sizes.map(s => so.includes(s) ? `<button type="button" class="out" disabled title="Out of stock">${esc(s)}</button>` : `<button type="button" class="${s === size ? 'on' : ''}" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
-        <div class="buy"><div class="qty"><button type="button" data-q="-1">−</button><input id="qty" value="1" inputmode="numeric"><button type="button" data-q="1">+</button></div>
-          <button class="btn" id="addBtn" style="flex:1" ${p.sizes && p.sizes.length && !size ? 'disabled' : ''}>${p.sizes && p.sizes.length && !size ? 'Out of stock' : 'Add to cart'}</button><button type="button" class="heart sq ${wish().includes(p.id) ? 'on' : ''}" data-wish="${p.id}">${wish().includes(p.id) ? '♥' : '♡'}</button></div>
-        <button class="btn ghost block" id="buyBtn">Buy now</button>
-        <div class="acc">
-          <details open><summary>Description & Size Chart</summary><div class="acc-b"><p>${esc(p.desc)}</p><ul><li>Premium quality fabric</li><li>Colour-fast, pre-washed</li><li>Machine wash cold, dry in shade</li></ul>
-            ${chart ? `<table class="chart" id="sizeChart">${chart.map((r, i) => `<tr>${r.map(v => i ? `<td>${v}</td>` : `<th>${v}</th>`).join('')}</tr>`).join('')}</table>` : ''}</div></details>
-          <details><summary>Delivery & Exchange</summary><div class="acc-b"><p>Inside Dhaka: 1–2 days (৳70, free over ৳3,000). Outside Dhaka: 2–4 days (৳130).</p><p>Wrong size? Exchange within 7 days. Item must be unused with tags.</p></div></details>
+    <div class="wrap lp">
+      <div class="lp-l">
+        <div class="lp-gal"><div class="main-img zoom" id="zoomBox"><img id="mainImg" src="${esc(imgs[0])}" alt="${esc(p.name)}">
+          ${imgs.length > 1 ? '<button type="button" class="arw l" data-d="-1">‹</button><button type="button" class="arw r" data-d="1">›</button>' : ''}${off ? `<span class="lp-off">-${off}%</span>` : ''}</div>
+          ${imgs.length > 1 ? `<div class="lp-thumbs">${imgs.map((s, i) => `<button type="button" class="${i ? '' : 'on'}" data-i="${i}"><img src="${esc(s)}" alt=""></button>`).join('')}</div>` : ''}</div>
+        <div class="lp-block"><h3 class="lp-h">Description <small>বিবরণ</small></h3><p class="lp-desc">${esc(p.desc)}</p></div>
+        <div class="lp-block lp-two">
+          <div><h3 class="lp-h">Key features <small>বৈশিষ্ট্য</small></h3><ul class="lp-feats">${feats.map(f => `<li>${ICO.ok}${esc(f)}</li>`).join('')}</ul></div>
+          <div><h3 class="lp-h">${p.cat === 'shoes' ? 'Material' : 'Fabric'} details</h3><ul class="lp-fab">${fabric.map(r => `<li>${ICO.tag}${r[0] ? `<span>${esc(r[0])}:</span> ` : ''}<b>${esc(r[1])}</b></li>`).join('')}</ul></div>
         </div>
-        <div class="pays"><span>COD</span><span>VISA</span><span>Mastercard</span><span class="bk">bKash</span><span class="ng">Nagad</span></div>
-        <p class="meta">SKU: ${sku}<br>Category: ${c ? c.name : ''}</p>
-      </div></div>
-    ${related.length ? `<section class="sec" style="padding-top:20px"><div class="wrap"><div class="sec-head"><h2>You may also like</h2><a href="#/c/${p.cat}">View all</a></div><div class="grid">${related.map(card).join('')}</div></div></section>` : ''}
-    ${recent.length ? `<section class="rv"><h3>Recently viewed</h3><div class="rv-row">${recent.map(x => `<a href="#/p/${esc(x.slug)}"><img src="${esc(x.img)}" alt=""><span>${esc(x.name)}</span></a>`).join('')}</div></section>` : ''}
-    <div class="stickybar" id="sticky"><div class="wrap sb-in"><img src="${esc(p.img)}" alt=""><div class="sb-t"><b>${esc(p.name)}</b><span>${money(now(p))}</span></div>
-      ${p.sizes && p.sizes.length ? `<select id="sbSize">${p.sizes.filter(s => !so.includes(s)).map(s => `<option>${esc(s)}</option>`).join('')}</select>` : ''}<button class="btn" id="sbAdd">Add to cart</button></div></div>`;
+        <div class="lp-block"><h3 class="lp-h">Why you will love it <small>কাছ থেকে দেখুন</small></h3>
+          <div class="lp-why">${details.map(d => `<div style="background-image:url('${esc(d[0])}');background-size:${d[1]};background-position:${d[2]}"></div>`).join('')}</div></div>
+        ${chart ? `<div class="lp-block" id="sizeChartBox"><h3 class="lp-h">Size chart <small>সাইজ চার্ট</small></h3><table class="chart lp-chart">${chart.map((r, i) => `<tr>${r.map(v => i ? `<td>${v}</td>` : `<th>${v}</th>`).join('')}</tr>`).join('')}</table></div>` : ''}
+        <div class="lp-block"><h3 class="lp-h">Delivery information <small>ডেলিভারি তথ্য</small></h3>
+          <div class="lp-deliv"><div>${ICO.bike}<p><b>ঢাকার ভিতরে</b>ডেলিভারি চার্জ: ৳70<br>সময়: ১-২ দিন</p></div><div>${ICO.van}<p><b>ঢাকার বাইরে</b>ডেলিভারি চার্জ: ৳130<br>সময়: ২-৪ দিন</p></div></div>
+          <div class="lp-cod">${ICO.cash} সারা বাংলাদেশে ক্যাশ অন ডেলিভারি, পণ্য হাতে পেয়ে টাকা দিন</div></div>
+      </div>
+      <div class="lp-r">
+        <div class="lp-head"><span class="lp-new">${p.isNew ? 'New arrival' : esc(c ? c.name : '')}</span><h1>${esc(p.name)}</h1>
+          <div class="lp-price"><b>${money(price)}</b>${off ? `<s>${money(p.price)}</s><em>${off}% OFF</em>` : ''}</div>
+          <ul class="lp-pts">${feats.slice(0, 4).map(f => `<li>${ICO.q}${esc(f)}</li>`).join('')}</ul></div>
+        <form class="lp-order" id="orderForm" novalidate>
+          <h2>অর্ডার করুন <small>Place your order</small></h2>
+          ${p.colors && p.colors.length ? `<div class="lp-step"><h4>১. কালার বেছে নিন <span id="cName">${esc(color)}</span></h4><div class="lp-colors">${p.colors.map((x, i) => `<button type="button" class="${i ? '' : 'on'}" data-c="${esc(x[0])}"><i style="background:${esc(x[1])}"></i><img src="${esc(p.img)}" alt=""><span>${esc(x[0])}</span></button>`).join('')}</div></div>` : ''}
+          ${p.sizes && p.sizes.length ? `<div class="lp-step"><h4>২. সাইজ বেছে নিন ${chart ? '<a href="#" id="chartLink">সাইজ চার্ট</a>' : ''}</h4><div class="lp-sizes">${p.sizes.map(s => so.includes(s) ? `<button type="button" class="out" disabled title="Out of stock">${esc(s)}</button>` : `<button type="button" class="${s === size ? 'on' : ''}" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>` : ''}
+          <div class="lp-step lp-row"><h4>৩. পরিমাণ</h4><div class="qty"><button type="button" data-q="-1">−</button><input id="qty" value="1" inputmode="numeric"><button type="button" data-q="1">+</button></div></div>
+          <div class="lp-step"><h4>৪. ডেলিভারি এলাকা</h4><div class="lp-zone">
+            <label class="on"><input type="radio" name="zone" value="inside" checked><span>ঢাকার ভিতরে</span><b>৳70</b></label>
+            <label><input type="radio" name="zone" value="outside"><span>ঢাকার বাইরে</span><b>৳130</b></label></div></div>
+          <div class="lp-step"><h4>৫. আপনার তথ্য</h4>
+            <label class="lp-in">${ICO.user}<input name="name" required placeholder="আপনার নাম লিখুন"></label>
+            <label class="lp-in">${ICO.phone}<input name="phone" required inputmode="tel" placeholder="মোবাইল নম্বর লিখুন (01XXXXXXXXX)"></label>
+            <label class="lp-in">${ICO.mail}<input name="email" type="email" required placeholder="আপনার Gmail লিখুন (অর্ডার নম্বর পাঠানো হবে)"></label>
+            <label class="lp-in ta">${ICO.pin}<textarea name="address" rows="2" required placeholder="সম্পূর্ণ ঠিকানা লিখুন (বাসা, রোড, এলাকা, জেলা)"></textarea></label></div>
+          <div class="lp-step"><h4>৬. অতিরিক্ত নোট <small>(ঐচ্ছিক)</small></h4><textarea class="lp-note" name="note" rows="2" placeholder="কোনো কিছু বলার থাকলে এখানে লিখুন..."></textarea></div>
+          <div class="lp-sum" id="lpSum"></div>
+          <p class="lp-err" id="lpErr"></p>
+          <button class="lp-btn" id="confirmBtn" ${noStock ? 'disabled' : ''}>${noStock ? 'স্টক শেষ' : 'অর্ডার কনফার্ম করুন'}</button>
+          <p class="lp-safe">${ICO.lock} আপনার তথ্য সম্পূর্ণ নিরাপদ · পণ্য হাতে পেয়ে টাকা দিন</p>
+          <button type="button" class="lp-cart" id="addBtn" ${noStock ? 'disabled' : ''}>অথবা কার্টে রাখুন (Add to cart)</button>
+        </form>
+      </div>
+    </div>
+    <section class="lp-why-band"><h2>কেন Rana Shop থেকে কিনবেন?</h2><div class="wrap">
+      <div>${ICO.q}<p><b>প্রিমিয়াম কোয়ালিটি</b>১০০% বাছাই করা পণ্য</p></div>
+      <div>${ICO.cash}<p><b>ক্যাশ অন ডেলিভারি</b>হাতে পেয়ে টাকা দিন</p></div>
+      <div>${ICO.ret}<p><b>সহজ এক্সচেঞ্জ</b>৭ দিনের মধ্যে সাইজ বদল</p></div>
+      <div>${ICO.van}<p><b>দ্রুত ডেলিভারি</b>সারা বাংলাদেশে</p></div></div></section>
+    ${related.length ? `<section class="sec"><div class="wrap"><div class="sec-head"><h2>You may also like</h2><a href="#/c/${p.cat}">View all</a></div><div class="grid">${related.map(card).join('')}</div></div></section>` : ''}
+    <div class="stickybar" id="sticky"><div class="wrap sb-in"><img src="${esc(p.img)}" alt=""><div class="sb-t"><b>${esc(p.name)}</b><span>${money(price)}</span></div><button class="btn lp-gold" id="sbGo">অর্ডার করুন</button></div></div>`;
     const zb = document.getElementById('zoomBox'), zi = document.getElementById('mainImg');
     zb.onmousemove = e => { if (e.target.closest('.arw')) return; const r = zb.getBoundingClientRect(); zi.style.transformOrigin = ((e.clientX - r.left) / r.width * 100) + '% ' + ((e.clientY - r.top) / r.height * 100) + '%'; zb.classList.add('on'); };
     zb.onmouseleave = () => zb.classList.remove('on');
     zb.onclick = e => { if (!e.target.closest('.arw')) zb.classList.toggle('tap'); };
-    const show = i => { cur = (i + imgs.length) % imgs.length; zi.src = imgs[cur]; app.querySelectorAll('.thumbs button').forEach((b, k) => b.classList.toggle('on', k === cur)); };
-    app.querySelectorAll('.thumbs button').forEach(b => b.onclick = () => show(+b.dataset.i));
+    const show = i => { cur = (i + imgs.length) % imgs.length; zi.src = imgs[cur]; app.querySelectorAll('.lp-thumbs button').forEach((b, k) => b.classList.toggle('on', k === cur)); };
+    app.querySelectorAll('.lp-thumbs button').forEach(b => b.onclick = () => show(+b.dataset.i));
     app.querySelectorAll('.arw').forEach(b => b.onclick = e => { e.stopPropagation(); show(cur + +b.dataset.d); });
-    app.querySelectorAll('.colors button').forEach(b => b.onclick = () => { app.querySelectorAll('.colors button').forEach(x => x.classList.remove('on')); b.classList.add('on'); color = b.dataset.c; document.getElementById('cName').textContent = color; });
-    const setSize = s => { size = s; app.querySelectorAll('.sizes button').forEach(x => x.classList.toggle('on', x.dataset.s === s)); const sn = document.getElementById('sName'); if (sn) sn.textContent = s; const ss = document.getElementById('sbSize'); if (ss) ss.value = s; };
-    app.querySelectorAll('.sizes button[data-s]').forEach(b => b.onclick = () => setSize(b.dataset.s));
-    const cl = document.getElementById('chartLink'); if (cl) cl.onclick = e => { e.preventDefault(); const d = app.querySelector('.acc details'); d.open = true; document.getElementById('sizeChart').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
-    const q = document.getElementById('qty');
-    app.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { q.value = Math.max(1, (parseInt(q.value) || 1) + +b.dataset.q); });
-    const add = () => {
-      if (p.sizes && p.sizes.length && !size) { toast('Sorry, this item is out of stock'); return; }
-      const cart = RS.cart(); const key = p.id + '|' + color + '|' + size;
-      const line = cart.find(l => l.key === key); const n = Math.max(1, parseInt(q.value) || 1);
-      if (line) line.qty += n; else cart.push({ key, id: p.id, color, size, qty: n });
-      RS.saveCart(cart); updateCount(); toast('Added to cart' + (size ? ' (' + size + ')' : ''));
+    app.querySelectorAll('.lp-colors button').forEach(b => b.onclick = () => { app.querySelectorAll('.lp-colors button').forEach(x => x.classList.remove('on')); b.classList.add('on'); color = b.dataset.c; document.getElementById('cName').textContent = color; });
+    app.querySelectorAll('.lp-sizes button[data-s]').forEach(b => b.onclick = () => { size = b.dataset.s; app.querySelectorAll('.lp-sizes button').forEach(x => x.classList.toggle('on', x === b)); });
+    const cl = document.getElementById('chartLink'); if (cl) cl.onclick = e => { e.preventDefault(); document.getElementById('sizeChartBox').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+    const q = document.getElementById('qty'); const qn = () => Math.max(1, Math.min(20, parseInt(q.value) || 1));
+    const draw = () => {
+      const n = qn(), sub = price * n, ship = zone === 'inside' ? (sub >= 3000 ? 0 : 70) : 130;
+      document.getElementById('lpSum').innerHTML = `<h4>অর্ডার সামারি</h4><div><span>পণ্যের দাম</span><span>${money(price)}</span></div><div><span>পরিমাণ</span><span>${n}</span></div>
+        <div><span>সাবটোটাল</span><b>${money(sub)}</b></div><div><span>ডেলিভারি চার্জ</span><span>${ship ? money(ship) : 'ফ্রি'}</span></div><div class="tot"><span>সর্বমোট</span><b>${money(sub + ship)}</b></div>`;
+      return { sub, ship, total: sub + ship, n };
     };
-    document.getElementById('addBtn').onclick = add;
-    document.getElementById('buyBtn').onclick = () => { add(); location.hash = '#/checkout'; };
-    const ss = document.getElementById('sbSize'); if (ss) ss.onchange = () => setSize(ss.value);
-    document.getElementById('sbAdd').onclick = add;
-    const sticky = document.getElementById('sticky'), ab = document.getElementById('addBtn');
-    const io = new IntersectionObserver(([en]) => sticky.classList.toggle('show', !en.isIntersecting && en.boundingClientRect.top < 0));
-    io.observe(ab);
+    app.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { q.value = Math.max(1, Math.min(20, qn() + +b.dataset.q)); draw(); });
+    q.oninput = draw;
+    app.querySelectorAll('.lp-zone input').forEach(r => r.onchange = () => { zone = r.value; app.querySelectorAll('.lp-zone label').forEach(l => l.classList.toggle('on', l.contains(r))); draw(); });
+    draw();
+    document.getElementById('addBtn').onclick = () => {
+      if (noStock) return;
+      const cart = RS.cart(); const key = p.id + '|' + color + '|' + size; const line = cart.find(l => l.key === key);
+      if (line) line.qty += qn(); else cart.push({ key, id: p.id, color, size, qty: qn() });
+      RS.saveCart(cart); updateCount(); toast('কার্টে যোগ হয়েছে' + (size ? ' (' + size + ')' : ''));
+    };
+    const form = document.getElementById('orderForm'), err = document.getElementById('lpErr');
+    form.onsubmit = e => {
+      e.preventDefault(); if (noStock) return;
+      const f = new FormData(form); const v = k => String(f.get(k) || '').trim();
+      const bad = !v('name') ? 'আপনার নাম লিখুন' : !/^(\+?88)?01[3-9]\d{8}$/.test(v('phone').replace(/[\s-]/g, '')) ? 'সঠিক মোবাইল নম্বর লিখুন (01XXXXXXXXX)' : !/^\S+@\S+\.\S+$/.test(v('email')) ? 'সঠিক Gmail লিখুন' : !v('address') ? 'সম্পূর্ণ ঠিকানা লিখুন' : '';
+      if (bad) { err.textContent = bad; const el = form.querySelector(`[name="${bad.includes('নাম') ? 'name' : bad.includes('মোবাইল') ? 'phone' : bad.includes('Gmail') ? 'email' : 'address'}"]`); el.focus(); return; }
+      err.textContent = '';
+      const t = draw(); const orders = RS.orders(); const no = 'RS' + (1001 + orders.length);
+      orders.unshift({ no, date: new Date().toISOString(), name: v('name'), email: v('email').toLowerCase(), phone: v('phone'), address: v('address'), zone, note: v('note'), pay: 'Cash on Delivery', status: 'Pending',
+        items: [{ name: p.name, img: p.img, color, size, qty: t.n, price }], sub: t.sub, ship: t.ship, total: t.total });
+      RS.saveOrders(orders); sendOrderMail(orders[0]); location.hash = '#/done/' + no;
+    };
+    document.getElementById('sbGo').onclick = () => form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const sticky = document.getElementById('sticky');
+    const io = new IntersectionObserver(([en]) => sticky.classList.toggle('show', !en.isIntersecting && window.scrollY > 300));
+    io.observe(form);
   }
   function lines() {
     const ps = RS.products();

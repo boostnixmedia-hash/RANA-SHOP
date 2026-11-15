@@ -123,7 +123,9 @@
     let img = d.img;
     shell(p ? 'products' : 'new', p ? 'Edit product' : 'Add product', `<form id="pf" class="form2"><div>
       <div class="box"><label>Product name *<input name="name" required value="${esc(d.name)}" placeholder="e.g. Oversized Cotton T-Shirt"></label>
-        <label>Description<textarea name="desc" rows="3">${esc(d.desc)}</textarea></label></div>
+        <label>Description<textarea name="desc" rows="3">${esc(d.desc)}</textarea></label>
+        <label>Key features <small style="color:var(--muted)">(one per line, Bangla or English. Leave empty to use the default list)</small><textarea name="features" rows="4" placeholder="প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক&#10;নরম ও আরামদায়ক">${esc((d.features || []).join('\n'))}</textarea></label>
+        <label>Fabric details <small style="color:var(--muted)">(one per line as Name: value, e.g. Fabric: 100% Cotton)</small><textarea name="fabric" rows="4" placeholder="Fabric: 100% Cotton&#10;GSM: 180-220">${esc((d.fabric || []).map(r => r.join(': ')).join('\n'))}</textarea></label></div>
       <div class="box"><h2>Photo</h2><label class="upl">Click to upload a photo (JPG / PNG)<input type="file" id="file" accept="image/*"></label><img id="prev" class="prev" ${img ? `src="${src(img)}"` : 'style="display:none"'} alt=""></div>
       <div class="box"><h2>Sizes & colours</h2>
         <label>Sizes (separate with commas)<input name="sizes" id="sizes" value="${esc(d.sizes.join(', '))}" placeholder="S, M, L, XL"></label>
@@ -159,7 +161,9 @@
       if (sale && sale >= price) { alert('Sale price must be lower than the regular price.'); return; }
       const list = RS.products(); const name = f.get('name').trim();
       let slug = RS.slugify(name), i = 2; while (list.some(x => x.slug === slug && (!p || x.id !== p.id))) slug = RS.slugify(name) + '-' + i++;
-      const data = { name, slug, desc: f.get('desc').trim(), price, sale, cat: f.get('cat'), img, status: f.get('status'), featured: f.get('featured') ? 1 : 0,
+      const data = { name, slug, desc: f.get('desc').trim(), price, sale, cat: f.get('cat'), img,
+        features: f.get('features').split('\n').map(x => x.trim()).filter(Boolean),
+        fabric: f.get('fabric').split('\n').map(x => x.trim()).filter(Boolean).map(x => { const k = x.indexOf(':'); return k > 0 ? [x.slice(0, k).trim(), x.slice(k + 1).trim()] : ['', x]; }), status: f.get('status'), featured: f.get('featured') ? 1 : 0,
         sizes: f.get('sizes').split(',').map(s => s.trim()).filter(Boolean), soldOut, colors: [...cols.children].map(r => [r.querySelector('.cn').value.trim(), r.querySelector('.ch').value]).filter(c => c[0]) };
       if (p) Object.assign(list.find(x => x.id === p.id), data);
       else list.unshift({ id: Math.max(0, ...list.map(x => x.id)) + 1, isNew: true, ...data });
