@@ -60,7 +60,34 @@
     root.querySelectorAll('.qs').forEach(sel => { sel.onclick = e => e.stopPropagation(); sel.onchange = () => { const os = RS.orders(); const o = os.find(x => x.no === sel.dataset.no); o.status = sel.value; RS.saveOrders(os); toast(o.no + ': ' + o.status); }; });
     root.querySelectorAll('.orow').forEach(r => r.onclick = e => { if (!e.target.closest('a,select')) location.hash = '#/order/' + r.dataset.no; });
   }
-  function orders() { shell('orders', 'Orders', `<div class="box">${ordersTable(RS.orders())}</div><p style="font-size:.85rem;color:var(--muted)">Tip: change the status right here, or tap an order to see everything.</p>`); bindOrders(); }
+  function orders() {
+    shell('orders', 'Orders', `<div class="box">${ordersTable(RS.orders())}</div><p style="font-size:.85rem;color:var(--muted)">Tip: change the status right here, or tap an order to see everything.</p>`,
+      `<button class="btn sm" id="xls">⬇ Download Excel</button>`);
+    bindOrders();
+    document.getElementById('xls').onclick = exportExcel;
+  }
+  function exportExcel() {
+    const os = RS.orders();
+    if (!os.length) { alert('No orders yet.'); return; }
+    const rows = os.map(o => {
+      const wa = String(o.phone || '').replace(/\D/g, '').replace(/^0/, '880');
+      return { 'Order No': o.no, 'Date': new Date(o.date).toLocaleString(), 'Customer': o.name, 'Phone': o.phone, 'WhatsApp': wa ? '+' + wa : '', 'WhatsApp link': wa ? 'https://wa.me/' + wa : '',
+        'Gmail': o.email || '', 'Address': o.address, 'Area': o.zone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka',
+        'Items': o.items.map(i => `${i.name} (${[i.color, i.size].filter(Boolean).join('/')}) x${i.qty}`).join(', '),
+        'Subtotal': o.sub, 'Delivery': o.ship, 'Total': o.total, 'Payment': o.pay, 'Status': o.status, 'Note': o.note || '' };
+    });
+    const name = 'rana-shop-orders-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+    if (window.XLSX) {
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = Object.keys(rows[0]).map(k => ({ wch: Math.min(50, Math.max(k.length, ...rows.map(r => String(r[k]).length)) + 2) }));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Orders'); XLSX.writeFile(wb, name);
+    } else {
+      const keys = Object.keys(rows[0]); const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+      const csv = '\ufeff' + [keys.map(q).join(','), ...rows.map(r => keys.map(k => q(r[k])).join(','))].join('\r\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = name.replace('.xlsx', '.csv'); a.click();
+    }
+    toast('Excel downloaded');
+  }
   function order(no) {
     const os = RS.orders(); const o = os.find(x => x.no === no);
     if (!o) return orders();
