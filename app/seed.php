@@ -51,7 +51,7 @@ function seed_all(): void {
     $cats = [];
     foreach ([['Shirts', 'shirts', 'Formal and casual shirts in breathable cotton.', 'shirt', '#e7edf5'], ['Pants', 'pants', 'Chinos, jeans, cargos and formal trousers.', 'pant', '#2f4766'],
               ['T-Shirts', 't-shirts', 'Everyday tees and polos in heavyweight cotton.', 'tee', '#1c1c1c'], ['Shoes', 'shoes', 'Sneakers, loafers and formal shoes.', 'shoe', '#6b4a32']] as $i => [$n, $s, $d, $t, $c]) {
-        $photo = ['shirts' => 'overshirt', 'pants' => 'pant', 't-shirts' => 'tee'][$s] ?? null;
+        $photo = ['shirts' => 'overshirt', 'pants' => 'pant', 't-shirts' => 'tee', 'shoes' => 'shoe'][$s] ?? null;
         $img = $photo ? demo_photo($photo) : demo_file('cat-' . $s, demo_art($t, $c, '#ebe5db'));
         $cats[$s] = insert('categories', ['name' => $n, 'slug' => $s, 'description' => $d, 'image' => $img, 'sort' => $i, 'seo_title' => $n . ' for Men', 'seo_desc' => $d]);
     }
@@ -106,6 +106,7 @@ function seed_all(): void {
 
     // ---- Real photo products (owner's own photos), newest and featured
     $real = [
+        ['Iridescent High-Top Sneaker', 'shoes', 'shoe', 8990, 7990, 5200, ['40', '41', '42', '43', '44'], ['Olive Gold', '#6b6a2e'], 'Patent high-top sneaker with an iridescent finish and a translucent icy sole.', ['limited-edition']],
         ['Embroidered Cuff Panjabi', 'shirts', 'panjabi', 3490, null, 1800, ['M', 'L', 'XL', 'XXL'], ['Silver Grey', '#a9a9b3'], 'Fine-weave panjabi with hand-embroidered cuffs. Made for Eid and weddings.', ['limited-edition']],
         ['Butterfly Graphic Oversized Tee', 't-shirts', 'tee', 1290, 990, 450, $tops, ['Stone', '#a59d94'], '240 GSM oversized tee with a soft-focus butterfly print.', ['new-season-2027']],
         ['Wide-Leg Drawstring Pant', 'pants', 'pant', 2190, null, 1000, $waist, ['Coffee', '#7a5a3a'], 'Relaxed wide-leg pant in soft twill with an elastic drawstring waist.', ['new-season-2027']],

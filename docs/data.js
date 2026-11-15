@@ -4,7 +4,7 @@ window.RS = (function () {
     { slug: 'shirts', name: 'Shirts', img: 'img/photo-overshirt.webp' },
     { slug: 'pants', name: 'Pants', img: 'img/photo-pant.webp' },
     { slug: 't-shirts', name: 'T-Shirts', img: 'img/photo-tee.webp' },
-    { slug: 'shoes', name: 'Shoes', img: 'img/cat-shoes.svg' },
+    { slug: 'shoes', name: 'Shoes', img: 'img/photo-shoe.webp' },
   ];
   const ls = {
     get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
