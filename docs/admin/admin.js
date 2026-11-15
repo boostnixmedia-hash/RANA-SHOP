@@ -123,7 +123,7 @@
     let img = d.img;
     shell(p ? 'products' : 'new', p ? 'Edit product' : 'Add product', `<form id="pf" class="form2"><div>
       <div class="box"><label>Product name *<input name="name" required value="${esc(d.name)}" placeholder="e.g. Oversized Cotton T-Shirt"></label>
-        <button type="button" class="btn ghost sm" id="autoIdea" style="margin-bottom:10px">✨ Auto idea (description, features, fabric)</button>
+        <button type="button" class="btn ghost sm" id="autoIdea" style="margin-bottom:10px">✨ Auto idea (pick a ready-made description)</button>
         <label>Description<textarea name="desc" rows="3">${esc(d.desc)}</textarea></label>
         <label>Key features <small style="color:var(--muted)">(one per line, Bangla or English. Leave empty to use the default list)</small><textarea name="features" rows="4" placeholder="প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক&#10;নরম ও আরামদায়ক">${esc((d.features || []).join('\n'))}</textarea></label>
         <label>Fabric details <small style="color:var(--muted)">(one per line as Name: value, e.g. Fabric: 100% Cotton)</small><textarea name="fabric" rows="4" placeholder="Fabric: 100% Cotton&#10;GSM: 180-220">${esc((d.fabric || []).map(r => r.join(': ')).join('\n'))}</textarea></label>
@@ -150,33 +150,68 @@
     const addCol = (n = '', h = '#222222') => { const r = document.createElement('div'); r.className = 'color-row'; r.innerHTML = `<input class="cn" placeholder="Colour name" value="${esc(n)}"><input type="color" class="ch" value="${esc(h)}"><button type="button" class="btn ghost sm">✕</button>`; r.querySelector('button').onclick = () => r.remove(); cols.appendChild(r); };
     d.colors.forEach(c => addCol(c[0], c[1]));
     document.getElementById('addCol').onclick = () => addCol();
-    // Auto idea: fills description, key features and fabric details from the product name + category
-    const IDEAS = [
-      [/cargo/, { d: 'Relaxed straight-leg cargo with roomy side pockets and a comfortable everyday fit.', f: ['প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক', 'রুমি সাইড কার্গো পকেট', 'আরামদায়ক রিলাক্সড ফিট', 'প্রতিদিন পরার জন্য পারফেক্ট'], fb: [['Fabric', 'Cotton Twill / Denim'], ['Fit', 'Relaxed straight'], ['Wash', 'Machine wash cold']] }],
-      [/jean|denim pant|denim trouser/, { d: 'Classic denim with a clean wash, sturdy stitching and a fit that holds its shape all day.', f: ['প্রিমিয়াম ডেনিম ফ্যাব্রিক', 'মজবুত স্টিচিং', 'দীর্ঘদিন টেকসই', 'স্টাইলিশ ওয়াশ ফিনিশ'], fb: [['Fabric', 'Stretch Denim'], ['Weight', '10-12 oz'], ['Wash', 'Machine wash cold, inside out']] }],
-      [/trouser|chino|drawstring|jogger|pant/, { d: 'Easy-wearing pants with a clean drape, soft feel and a comfortable waist for all-day wear.', f: ['নরম ও আরামদায়ক ফ্যাব্রিক', 'কমফোর্টেবল ওয়েস্ট', 'পরিষ্কার ও নিখুঁত ফিনিশ', 'অফিস ও ক্যাজুয়াল দুই জায়গায়ই মানানসই'], fb: [['Fabric', 'Cotton Blend'], ['Fit', 'Relaxed'], ['Wash', 'Machine wash cold']] }],
-      [/polo/, { d: 'Soft cotton piqué polo with a neat collar and a smooth, breathable feel.', f: ['প্রিমিয়াম কটন পিকে ফ্যাব্রিক', 'নরম ও আরামদায়ক', 'রঙ ফ্যাকাশে হয় না', 'ক্যাজুয়াল ও সেমি-ফর্মাল দুইভাবেই পরা যায়'], fb: [['Fabric', '100% Cotton Piqué'], ['GSM', '200-220'], ['Wash', 'Machine wash cold']] }],
-      [/tee|t-shirt|tshirt|graphic|oversized/, { d: 'Heavy cotton tee with a soft hand-feel, clean neckline and a relaxed fit that sits right.', f: ['প্রিমিয়াম কটন ফ্যাব্রিক', 'নরম ও আরামদায়ক', 'ওয়াশ করলেও প্রিন্ট ঠিক থাকে', 'ঘাম শোষণ করে, গরমে স্বস্তি'], fb: [['Fabric', '100% Cotton'], ['GSM', '180-220'], ['Fit', 'Regular / Oversized']] }],
-      [/panjabi|punjabi|kurta/, { d: 'Elegant panjabi with fine detailing, a soft fall and a fit made for festive and everyday occasions.', f: ['প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক', 'সুন্দর এমব্রয়ডারি ডিটেইলস', 'নরম ও আরামদায়ক', 'ঈদ, বিয়ে ও যেকোনো অনুষ্ঠানে মানানসই'], fb: [['Fabric', 'Soft Cotton / Viscose Blend'], ['Fit', 'Regular'], ['Wash', 'Gentle wash, dry in shade']] }],
-      [/overshirt|jacket|coat|hoodie/, { d: 'Layer-ready outer piece with a structured feel, good fabric weight and clean finishing.', f: ['মজবুত ও টেকসই ফ্যাব্রিক', 'স্টাইলিশ লেয়ারিং লুক', 'আরামদায়ক ফিট', 'শীত ও হালকা ঠান্ডায় উপযোগী'], fb: [['Fabric', 'Cotton Twill'], ['Fit', 'Relaxed'], ['Wash', 'Machine wash cold']] }],
-      [/shirt|oxford|chambray/, { d: 'Smart shirt with a crisp collar, soft fabric and a clean cut that looks sharp from desk to dinner.', f: ['প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক', 'নরম ও আরামদায়ক', 'পারফেক্ট ফিট ও ফিনিশ', 'অফিস ও আউটিং দুই জায়গায়ই মানানসই'], fb: [['Fabric', 'Cotton / Cotton Blend'], ['Fit', 'Regular'], ['Wash', 'Machine wash cold, iron on medium']] }],
-      [/sneaker|shoe|loafer|sandal|boot/, { d: 'Comfortable everyday footwear with a cushioned sole, firm grip and a clean look that goes with everything.', f: ['আরামদায়ক কুশন সোল', 'মজবুত গ্রিপ, পিছলে যায় না', 'হালকা ওজন, সারাদিন পরার উপযোগী', 'সব পোশাকের সাথে মানানসই'], fb: [['Upper', 'Synthetic Leather / Mesh'], ['Sole', 'Rubber'], ['Care', 'Wipe with a damp cloth']] }],
-    ];
-    const BYCAT = {
-      shirts: { d: 'Smart shirt with a crisp collar, soft fabric and a clean cut that looks sharp from desk to dinner.', f: ['প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক', 'নরম ও আরামদায়ক', 'পারফেক্ট ফিট ও ফিনিশ'], fb: [['Fabric', 'Cotton Blend'], ['Fit', 'Regular']] },
-      pants: { d: 'Easy-wearing pants with a clean drape, soft feel and a comfortable fit for all-day wear.', f: ['নরম ও আরামদায়ক ফ্যাব্রিক', 'কমফোর্টেবল ফিট', 'মজবুত ও টেকসই'], fb: [['Fabric', 'Cotton Blend'], ['Fit', 'Relaxed']] },
-      't-shirts': { d: 'Soft cotton tee with a clean neckline and a comfortable fit for everyday wear.', f: ['প্রিমিয়াম কটন ফ্যাব্রিক', 'নরম ও আরামদায়ক', 'ওয়াশ করলেও রঙ ঠিক থাকে'], fb: [['Fabric', '100% Cotton'], ['GSM', '180-220']] },
-      shoes: { d: 'Comfortable everyday footwear with a cushioned sole and a clean look.', f: ['আরামদায়ক কুশন সোল', 'মজবুত গ্রিপ', 'হালকা ওজন'], fb: [['Upper', 'Synthetic Leather'], ['Sole', 'Rubber']] },
+    // Auto idea: shows several ready-made, nicely written options for the product type; click one to fill the boxes
+    const T = {
+      shirt: { fb: [['Fabric', 'Premium Cotton'], ['Fit', 'Regular'], ['Collar', 'Classic'], ['Care', 'Machine wash cold, iron on medium']], v: [
+        ['Premium Office', 'A sharp, well-structured shirt with a crisp collar and smooth fabric. Polished enough for work, relaxed enough for the weekend.', ['প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক', 'ক্রিস্প কলার, নিখুঁত ফিনিশ', 'সারাদিন পরলেও আরামদায়ক', 'অফিস ও পার্টি দুই জায়গায়ই মানানসই']],
+        ['Casual Daily', 'Soft, easy shirt you can throw on and go. Lightweight fabric and a relaxed cut that works with jeans or chinos.', ['হালকা ও নরম ফ্যাব্রিক', 'রিলাক্সড ক্যাজুয়াল ফিট', 'জিন্স ও চিনোর সাথে পারফেক্ট', 'ঘামে আরাম, গরমে স্বস্তি']],
+        ['বাংলা', 'প্রিমিয়াম কটন ফ্যাব্রিকে তৈরি স্টাইলিশ শার্ট। নরম, আরামদায়ক এবং সারাদিন পরার জন্য একদম পারফেক্ট।', ['১০০% প্রিমিয়াম কটন ফ্যাব্রিক', 'নরম ও আরামদায়ক', 'নিখুঁত সেলাই ও ফিনিশ', 'ধোয়ার পরও ফিট ও রঙ ঠিক থাকে']],
+        ['Short & Clean', 'Clean cut, soft fabric, perfect fit. A shirt that goes with everything.', ['নরম ফ্যাব্রিক', 'পারফেক্ট ফিট', 'সব পোশাকের সাথে মানানসই']]] },
+      denim: { fb: [['Fabric', 'Stretch Denim'], ['Weight', '10-12 oz'], ['Fit', 'Straight / Relaxed'], ['Care', 'Machine wash cold, inside out']], v: [
+        ['Premium Denim', 'Classic denim with a clean wash, sturdy stitching and a fit that keeps its shape all day.', ['প্রিমিয়াম ডেনিম ফ্যাব্রিক', 'মজবুত স্টিচিং, দীর্ঘদিন টেকসই', 'স্টাইলিশ ওয়াশ ফিনিশ', 'সারাদিন পরলেও আরামদায়ক']],
+        ['Street Style', 'Relaxed-leg jeans with a worn-in wash and an easy street look. Pairs with tees, shirts and sneakers.', ['রিলাক্সড ফিট, ট্রেন্ডি লুক', 'নরম ওয়াশড ডেনিম', 'টি-শার্ট ও শার্ট দুইয়ের সাথেই মানায়', 'মজবুত পকেট ও জিপার']],
+        ['বাংলা', 'উন্নত মানের ডেনিমে তৈরি স্টাইলিশ জিন্স। আরামদায়ক ফিট, মজবুত সেলাই, প্রতিদিনের জন্য পারফেক্ট।', ['উন্নত মানের ডেনিম', 'আরামদায়ক ফিট', 'মজবুত সেলাই', 'রঙ সহজে ফ্যাকাশে হয় না']],
+        ['Short & Clean', 'Good denim, good fit, built to last.', ['প্রিমিয়াম ডেনিম', 'পারফেক্ট ফিট', 'টেকসই']]] },
+      cargo: { fb: [['Fabric', 'Cotton Twill'], ['Fit', 'Relaxed straight'], ['Pockets', 'Side cargo pockets'], ['Care', 'Machine wash cold']], v: [
+        ['Utility Look', 'Relaxed straight-leg cargo with roomy side pockets. Practical, comfortable and easy to style.', ['রুমি সাইড কার্গো পকেট', 'রিলাক্সড স্ট্রেইট ফিট', 'মজবুত ফ্যাব্রিক', 'প্রতিদিন পরার জন্য পারফেক্ট']],
+        ['Street Style', 'A roomy cargo with a clean, modern shape. Wear it with an oversized tee and sneakers.', ['ট্রেন্ডি ক্যাজুয়াল লুক', 'বড় পকেটে মোবাইল ও জিনিসপত্র রাখা যায়', 'আরামদায়ক ফ্রি মুভমেন্ট', 'ওভারসাইজড টি-শার্টের সাথে দারুণ']],
+        ['বাংলা', 'আরামদায়ক রিলাক্সড ফিটের কার্গো প্যান্ট। বড় সাইড পকেট ও মজবুত ফ্যাব্রিকে তৈরি, রোজকার পরার জন্য সেরা।', ['বড় সাইড পকেট', 'মজবুত ও টেকসই ফ্যাব্রিক', 'আরামদায়ক ফিট', 'ক্যাজুয়াল ও আউটিংয়ে মানানসই']],
+        ['Short & Clean', 'Roomy pockets, relaxed fit, easy to style.', ['কার্গো পকেট', 'রিলাক্সড ফিট', 'মজবুত ফ্যাব্রিক']]] },
+      pant: { fb: [['Fabric', 'Cotton Blend'], ['Fit', 'Relaxed'], ['Waist', 'Comfort waist'], ['Care', 'Machine wash cold']], v: [
+        ['Smart Casual', 'Easy-wearing pants with a clean drape and a pressed front crease. Looks sharp and feels light.', ['নরম ও আরামদায়ক ফ্যাব্রিক', 'পরিষ্কার ড্রেপ ও ফিনিশ', 'কমফোর্টেবল ওয়েস্ট', 'অফিস ও ক্যাজুয়াল দুই জায়গায়ই মানানসই']],
+        ['Relaxed Fit', 'A comfortable wide-leg pant with a soft feel and a relaxed shape that moves with you.', ['ওয়াইড লেগ রিলাক্সড ফিট', 'ড্রস্ট্রিং ওয়েস্ট, সহজে পরা যায়', 'হালকা ও নরম ফ্যাব্রিক', 'গরমেও আরামদায়ক']],
+        ['বাংলা', 'নরম ও টেকসই ফ্যাব্রিকের স্টাইলিশ প্যান্ট। আরামদায়ক ফিট, সারাদিন পরার জন্য পারফেক্ট।', ['নরম ও টেকসই ফ্যাব্রিক', 'আরামদায়ক ফিট', 'নিখুঁত সেলাই', 'সহজে ইস্ত্রি ও যত্ন']],
+        ['Short & Clean', 'Clean drape, soft feel, comfortable all day.', ['নরম ফ্যাব্রিক', 'আরামদায়ক ফিট', 'মজবুত সেলাই']]] },
+      polo: { fb: [['Fabric', '100% Cotton Piqué'], ['GSM', '200-220'], ['Fit', 'Regular'], ['Care', 'Machine wash cold']], v: [
+        ['Premium Polo', 'Soft cotton piqué polo with a neat collar and a smooth, breathable feel. A clean look for any day.', ['প্রিমিয়াম কটন পিকে ফ্যাব্রিক', 'নিট কলার, পরিষ্কার ফিনিশ', 'ব্রিদেবল ও নরম', 'ক্যাজুয়াল ও সেমি-ফর্মাল দুইভাবেই পরা যায়']],
+        ['Casual Daily', 'An easy polo for everyday wear. Light, soft and sits well with jeans or trousers.', ['হালকা ও আরামদায়ক', 'রঙ ফ্যাকাশে হয় না', 'জিন্স ও ট্রাউজারের সাথে মানায়', 'গরমে স্বস্তি']],
+        ['বাংলা', 'প্রিমিয়াম কটনে তৈরি স্টাইলিশ পোলো শার্ট। নরম, আরামদায়ক এবং দেখতে ক্লাসি।', ['১০০% কটন ফ্যাব্রিক', 'নরম ও আরামদায়ক', 'ক্লাসি লুক', 'ধোয়ার পরও আকার ঠিক থাকে']],
+        ['Short & Clean', 'Soft piqué, neat collar, easy to wear.', ['কটন ফ্যাব্রিক', 'নিট কলার', 'আরামদায়ক ফিট']]] },
+      tee: { fb: [['Fabric', '100% Cotton'], ['GSM', '180-220'], ['Fit', 'Regular / Oversized'], ['Care', 'Machine wash cold, inside out']], v: [
+        ['Heavy Cotton', 'Heavy cotton tee with a soft hand-feel, clean neckline and a relaxed fit that sits right.', ['প্রিমিয়াম কটন ফ্যাব্রিক', 'নরম ও আরামদায়ক', 'ওয়াশ করলেও প্রিন্ট ঠিক থাকে', 'ঘাম শোষণ করে, গরমে স্বস্তি']],
+        ['Streetwear', 'Oversized tee with a bold print and a drop-shoulder shape. Easy streetwear that goes with everything.', ['ওভারসাইজড ড্রপ শোল্ডার ফিট', 'বোল্ড প্রিন্ট', 'ট্রেন্ডি স্ট্রিট লুক', 'জিন্স ও কার্গোর সাথে দারুণ']],
+        ['বাংলা', 'উন্নত মানের কটনে তৈরি আরামদায়ক টি-শার্ট। নরম ফ্যাব্রিক, নিখুঁত ফিট, রোজকার পরার জন্য সেরা।', ['উন্নত মানের কটন', 'নরম ও আরামদায়ক', 'নিখুঁত ফিট', 'ধোয়ার পরও রঙ ঠিক থাকে']],
+        ['Short & Clean', 'Soft cotton, clean fit, easy every day.', ['কটন ফ্যাব্রিক', 'নরম ও আরামদায়ক', 'পারফেক্ট ফিট']]] },
+      panjabi: { fb: [['Fabric', 'Soft Cotton / Viscose Blend'], ['Fit', 'Regular'], ['Detailing', 'Embroidery'], ['Care', 'Gentle wash, dry in shade']], v: [
+        ['Festive', 'Elegant panjabi with fine detailing and a soft fall. Made for Eid, weddings and every special day.', ['প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক', 'সুন্দর এমব্রয়ডারি ডিটেইলস', 'নরম ও আরামদায়ক', 'ঈদ, বিয়ে ও যেকোনো অনুষ্ঠানে মানানসই']],
+        ['Everyday Classy', 'A light, comfortable panjabi for Fridays and family get-togethers. Simple, neat and classy.', ['হালকা ও আরামদায়ক', 'সিম্পল ও ক্লাসি ডিজাইন', 'শুক্রবার ও পারিবারিক অনুষ্ঠানে মানানসই', 'নিখুঁত সেলাই']],
+        ['বাংলা', 'নরম ও আরামদায়ক ফ্যাব্রিকে তৈরি স্টাইলিশ পাঞ্জাবি। সুন্দর কাজ ও নিখুঁত ফিনিশ, উৎসব ও অনুষ্ঠানের জন্য পারফেক্ট।', ['নরম ও আরামদায়ক ফ্যাব্রিক', 'সুন্দর হাতের কাজ', 'নিখুঁত ফিনিশ', 'উৎসব ও অনুষ্ঠানে মানানসই']],
+        ['Short & Clean', 'Fine detailing, soft fabric, classy look.', ['নরম ফ্যাব্রিক', 'সুন্দর ডিজাইন', 'আরামদায়ক ফিট']]] },
+      jacket: { fb: [['Fabric', 'Cotton Twill'], ['Fit', 'Relaxed'], ['Closure', 'Button / Zip'], ['Care', 'Machine wash cold']], v: [
+        ['Layering', 'Layer-ready outer piece with a structured feel and good fabric weight. Throw it over a tee or shirt.', ['স্টাইলিশ লেয়ারিং লুক', 'মজবুত ও টেকসই ফ্যাব্রিক', 'আরামদায়ক ফিট', 'হালকা ঠান্ডায় উপযোগী']],
+        ['Street Style', 'Relaxed outer layer with a clean modern shape. Easy to style over tees, shirts and hoodies.', ['রিলাক্সড ফিট', 'ট্রেন্ডি লুক', 'টি-শার্ট ও শার্টের উপর দারুণ', 'মজবুত পকেট']],
+        ['বাংলা', 'মজবুত ও আরামদায়ক ফ্যাব্রিকে তৈরি স্টাইলিশ জ্যাকেট। শীতের সকালে বা হালকা ঠান্ডায় পরার জন্য পারফেক্ট।', ['মজবুত ও টেকসই ফ্যাব্রিক', 'আরামদায়ক ফিট', 'স্টাইলিশ ডিজাইন', 'হালকা শীতের জন্য উপযোগী']],
+        ['Short & Clean', 'Structured, comfortable, easy to layer.', ['মজবুত ফ্যাব্রিক', 'আরামদায়ক ফিট', 'স্টাইলিশ লুক']]] },
+      shoes: { fb: [['Upper', 'Synthetic Leather / Mesh'], ['Sole', 'Rubber'], ['Insole', 'Cushioned'], ['Care', 'Wipe with a damp cloth']], v: [
+        ['Everyday Comfort', 'Comfortable everyday footwear with a cushioned sole, firm grip and a clean look that goes with everything.', ['আরামদায়ক কুশন সোল', 'মজবুত গ্রিপ, পিছলে যায় না', 'হালকা ওজন, সারাদিন পরার উপযোগী', 'সব পোশাকের সাথে মানানসই']],
+        ['Sneaker Style', 'Clean low-profile sneakers with a premium finish. Pair them with jeans, cargos or shorts.', ['ক্লিন ও প্রিমিয়াম লুক', 'নরম ইনসোল, পায়ে আরাম', 'টেকসই রাবার সোল', 'জিন্স ও কার্গোর সাথে দারুণ']],
+        ['বাংলা', 'আরামদায়ক ও টেকসই জুতা। নরম সোল, মজবুত গ্রিপ এবং স্টাইলিশ লুক, রোজকার ব্যবহারের জন্য পারফেক্ট।', ['নরম কুশন সোল', 'মজবুত গ্রিপ', 'হালকা ওজন', 'স্টাইলিশ ও টেকসই']],
+        ['Short & Clean', 'Light, comfortable, clean look.', ['আরামদায়ক সোল', 'হালকা ওজন', 'টেকসই']]] },
     };
     const pf = document.getElementById('pf');
-    const idea = () => { const nm = pf.elements.name.value.toLowerCase(); const hit = IDEAS.find(x => x[0].test(nm)); return hit ? hit[1] : BYCAT[pf.elements.cat.value]; };
-    const fillIdea = force => { const i = idea(); if (!i) return false;
-      const set = (el, v) => { if (force || !el.value.trim()) el.value = v; };
-      set(pf.elements.desc, i.d); set(pf.elements.features, i.f.join('\n')); set(pf.elements.fabric, i.fb.map(r => r.join(': ')).join('\n')); return true; };
-    document.getElementById('autoIdea').onclick = () => { const filled = ['desc', 'features', 'fabric'].some(n => pf.elements[n].value.trim());
-      if (filled && !confirm('Replace the current description, features and fabric with an auto idea?')) return; if (!fillIdea(true)) alert('Type a product name or pick a category first.'); };
-    // when a new product's name is typed and the boxes are still empty, fill them automatically
-    if (!p) { pf.elements.name.addEventListener('blur', () => fillIdea(false)); pf.elements.cat.addEventListener('change', () => fillIdea(false)); }
+    const typeOf = () => { const nm = pf.elements.name.value.toLowerCase(), cat = pf.elements.cat.value;
+      if (/cargo/.test(nm)) return 'cargo'; if (/jean|denim (pant|trouser)/.test(nm)) return 'denim'; if (/panjabi|punjabi|kurta/.test(nm)) return 'panjabi'; if (/polo/.test(nm)) return 'polo';
+      if (/overshirt|jacket|coat|hoodie/.test(nm)) return 'jacket'; if (/tee|t-shirt|tshirt|graphic/.test(nm)) return 'tee'; if (/sneaker|shoe|loafer|sandal|boot/.test(nm)) return 'shoes';
+      return { shirts: 'shirt', pants: 'pant', 't-shirts': 'tee', shoes: 'shoes' }[cat] || 'shirt'; };
+    const apply = (t, i) => { const v = T[t].v[i]; pf.elements.desc.value = v[1]; pf.elements.features.value = v[2].join('\n'); pf.elements.fabric.value = T[t].fb.map(r => r.join(': ')).join('\n'); };
+    const box = document.createElement('div'); box.id = 'ideaBox'; box.hidden = true; document.getElementById('autoIdea').after(box);
+    const showIdeas = () => { const t = typeOf(); box.hidden = false;
+      box.innerHTML = '<p style="margin:0 0 8px;font-size:.85rem;color:var(--muted)">Pick one, it fills Description, Key features and Fabric. You can edit after.</p>' + T[t].v.map((v, i) => `<div style="border:1px solid #ddd;border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#fff"><b style="font-size:.85rem">${esc(v[0])}</b><p style="margin:4px 0;font-size:.88rem">${esc(v[1])}</p><small style="color:var(--muted)">${v[2].map(esc).join(' · ')}</small><div style="margin-top:6px"><button type="button" class="btn sm" data-use="${i}">Use this</button></div></div>`).join('');
+      box.querySelectorAll('[data-use]').forEach(b => b.onclick = () => { apply(t, +b.dataset.use); box.hidden = true; }); };
+    document.getElementById('autoIdea').onclick = showIdeas;
+    // on a new product, show the options once the name is typed and the boxes are still empty
+    if (!p) { const maybe = () => { if (!['desc', 'features', 'fabric'].some(n => pf.elements[n].value.trim()) && pf.elements.name.value.trim()) showIdeas(); };
+      pf.elements.name.addEventListener('blur', maybe); pf.elements.cat.addEventListener('change', maybe); }
     root.querySelectorAll('[data-z]').forEach(b => b.onclick = () => { document.getElementById('sizes').value = b.dataset.z; drawSo(); });
     document.getElementById('file').onchange = e => {
       const f = e.target.files[0]; if (!f) return;
