@@ -33,23 +33,34 @@
 
   function home() {
     const ps = visible();
-    const feat = ps.filter(p => p.featured).slice(0, 8);
+    const by = s => ps.find(p => p.slug === s);
+    const pick = (...s) => s.map(by).filter(Boolean);
+    const must = ps.filter(p => p.featured).slice(0, 6);
+    const tile = (p, lbl) => p ? `<a class="htile" href="#/p/${esc(p.slug)}"><img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy"><span>${esc(lbl || p.name)}</span></a>` : '';
+    const heroImgs = pick('zip-front-denim-shirt', 'embroidered-cuff-panjabi', 'tie-dye-overshirt').map(p => p.img);
+    const denim = pick('baggy-black-wash-jeans', 'light-blue-cargo-jeans', 'washed-graphic-tee');
+    const black = pick('black-zip-polo', 'charcoal-wide-leg-trouser');
     app.innerHTML = `
-    <section class="hero"><div class="wrap"><div class="hero-txt">
-      <div class="eyebrow">New Season 2027</div><h1>Quiet luxury, everyday prices</h1>
-      <p>Shirts, pants, tees and shoes made from fabrics that feel as good as they look.</p>
-      <a class="btn" href="#/shop">Shop now</a> <a class="btn ghost" href="#/c/shirts">Shirts</a></div></div></section>
-    <div class="feats"><div class="wrap">
-      <div><b>Nationwide delivery</b><small>2–4 days anywhere in Bangladesh</small></div>
-      <div><b>Cash on Delivery</b><small>Pay when you receive</small></div>
-      <div><b>7-day exchange</b><small>Easy size exchange</small></div>
-      <div><b>Secure payment</b><small>bKash, Nagad and cards</small></div></div></div>
-    <section class="sec"><div class="wrap"><div class="sec-head"><h2>Shop by category</h2><a href="#/shop">View all</a></div>
-      <div class="cats">${RS.CATS.map(c => `<a class="cat" href="#/c/${c.slug}"><img src="${c.img}" alt="${c.name}"><span>${c.name}</span></a>`).join('')}</div></div></section>
-    <section class="sec" style="padding-top:0"><div class="wrap"><div class="sec-head"><h2>New arrivals</h2><a href="#/shop">Shop all</a></div>
-      <div class="grid">${ps.slice(0, 8).map(card).join('')}</div></div></section>
-    <section class="sec" style="background:var(--surface)"><div class="wrap"><div class="sec-head"><h2>Featured</h2><a href="#/shop">See more</a></div>
-      <div class="grid">${feat.map(card).join('')}</div></div></section>`;
+    <section class="h-hero">${heroImgs.map(s => `<div style="background-image:url('${s}')"></div>`).join('')}
+      <div class="h-hero-txt"><small>Rana Shop</small><h1>NEW SEASON '27</h1><p>Clean cuts, rich fabrics, made for everyday Dhaka.</p><div><a class="btn light" href="#/shop">Shop now</a><a class="btn outline" href="#/c/shirts">Shirts</a></div></div></section>
+    <div class="h-strip">Cash on Delivery all over Bangladesh · Free delivery inside Dhaka over ৳3,000 · 7-day easy exchange</div>
+    <section class="h-must"><h2 class="h-title">MUST HAVES</h2><div class="h-row">${must.map(p => tile(p)).join('')}</div></section>
+    ${denim.length >= 2 ? `<section class="h-banner dark"><div class="hb-imgs">${denim.map(p => `<a href="#/p/${esc(p.slug)}" style="background-image:url('${p.img}')"></a>`).join('')}</div>
+      <div class="hb-txt right"><h2>DENIM<br><small>DESTINATION</small></h2><a class="btn light" href="#/c/pants">Shop pants</a></div></section>` : ''}
+    <section class="h-cats">${RS.CATS.map(c => `<a href="#/c/${c.slug}" style="background-image:url('${c.img}')"><span>${c.name.toUpperCase()}</span></a>`).join('')}</section>
+    ${black.length ? `<section class="h-banner black"><div class="hb-txt"><div class="mono"><img src="img/logo-mark.png" alt=""><span>RANA <b>|</b> BLACK</span></div><p>Redefining everyday luxury.</p><a class="btn light" href="#/c/t-shirts">Explore</a></div>
+      <div class="hb-imgs two">${black.map(p => `<a href="#/p/${esc(p.slug)}" style="background-image:url('${p.img}')"></a>`).join('')}</div></section>` : ''}
+    <section class="h-new"><div class="wrap"><div class="sec-head"><h2>New arrivals</h2><a href="#/shop">Shop all</a></div><div class="grid">${ps.slice(0, 8).map(card).join('')}</div></div></section>
+    <section class="h-feats"><div class="wrap">
+      <div><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7z"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg><b>FREE SHIPPING</b><small>Inside Dhaka on orders over ৳3,000</small></div>
+      <div><svg viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0v4a2 2 0 0 1-2 2h-1v-6h3M4 13v4a2 2 0 0 0 2 2h1v-6H4"/></svg><b>SUPPORT 24/7</b><small>Message us on WhatsApp any time</small></div>
+      <div><svg viewBox="0 0 24 24"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg><b>EASY EXCHANGE</b><small>Change size within 7 days</small></div>
+      <div><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="1"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><b>100% SECURE PAYMENT</b><small>COD, bKash, Nagad and cards</small></div></div></section>
+    <section class="h-express"><div><h2>Same-Day Delivery in Dhaka</h2><p>Order before 2 PM and get it today inside Dhaka city.</p><a class="btn outline" href="#/shop">Shop now</a></div></section>
+    <section class="h-news"><h3>Subscribe to our newsletter</h3><p>New arrivals and offers, straight to your inbox.</p>
+      <form id="newsF"><input type="email" required placeholder="Your email address"><button class="btn">Subscribe</button></form>
+      <div class="social"><a href="#" aria-label="Facebook">f</a><a href="#" aria-label="Instagram">◎</a><a href="#" aria-label="TikTok">♪</a><a href="#" aria-label="YouTube">▶</a></div></section>`;
+    document.getElementById('newsF').onsubmit = e => { e.preventDefault(); const l = RS.ls.get('rs_news', []); l.push(e.target[0].value); RS.ls.set('rs_news', l); e.target.reset(); toast('Thanks for subscribing!'); };
   }
   function listing(slug) {
     const c = slug ? RS.cat(slug) : null;
@@ -58,37 +69,75 @@
       <div class="wrap"><div class="filters"><a href="#/shop" class="${!slug ? 'on' : ''}">All</a>${RS.CATS.map(x => `<a href="#/c/${x.slug}" class="${x.slug === slug ? 'on' : ''}">${x.name}</a>`).join('')}</div>
       ${ps.length ? `<div class="grid" style="margin-bottom:80px">${ps.map(card).join('')}</div>` : '<p class="empty">No products here yet.</p>'}</div>`;
   }
+  const SIZE_CHART = {
+    shirts: [['Size', 'Chest (in)', 'Length (in)', 'Sleeve (in)'], ['S', '38', '28', '24'], ['M', '40', '29', '24.5'], ['L', '42', '30', '25'], ['XL', '44', '31', '25.5'], ['XXL', '46', '32', '26']],
+    't-shirts': [['Size', 'Chest (in)', 'Length (in)'], ['S', '40', '27'], ['M', '42', '28'], ['L', '44', '29'], ['XL', '46', '30'], ['XXL', '48', '31']],
+    pants: [['Size', 'Waist (in)', 'Hip (in)', 'Length (in)'], ['28', '28', '38', '40'], ['30', '30', '40', '40.5'], ['32', '32', '42', '41'], ['34', '34', '44', '41.5'], ['36', '36', '46', '42']],
+    shoes: [['Size (EU)', 'UK', 'Foot length (cm)'], ['40', '6', '25.5'], ['41', '7', '26'], ['42', '8', '26.5'], ['43', '9', '27.5'], ['44', '10', '28']],
+  };
   function product(slug) {
     const p = visible().find(x => x.slug === slug);
     if (!p) { app.innerHTML = '<div class="wrap empty"><h1>Product not found</h1><p><a class="btn" href="#/shop">Back to shop</a></p></div>'; return; }
     const c = RS.cat(p.cat);
-    let size = (p.sizes || [])[0] || '', color = ((p.colors || [])[0] || [''])[0];
-    app.innerHTML = `<div class="wrap pd">
-      <div class="main-img zoom" id="zoomBox"><img src="${esc(p.img)}" alt="${esc(p.name)}"><span class="zhint">Hover to zoom</span></div>
-      <div><div class="crumbs"><a href="#/">Home</a> / <a href="#/c/${p.cat}">${c ? c.name : ''}</a></div>
-        <h1>${esc(p.name)}</h1>${priceHtml(p)}<p class="short">${esc(p.desc)}</p>
+    const imgs = [p.img, ...(p.images || [])].filter(Boolean);
+    let size = (p.sizes || [])[0] || '', color = ((p.colors || [])[0] || [''])[0], cur = 0;
+    // recently viewed
+    let rv = RS.ls.get('rs_recent', []).filter(id => id !== p.id); rv.unshift(p.id); RS.ls.set('rs_recent', rv.slice(0, 10));
+    const recent = rv.slice(1).map(id => visible().find(x => x.id === id)).filter(Boolean).slice(0, 5);
+    const related = visible().filter(x => x.cat === p.cat && x.id !== p.id).slice(0, 4);
+    const chart = SIZE_CHART[p.cat];
+    const sku = 'RS-' + String(p.cat).slice(0, 2).toUpperCase() + '-' + String(p.id).padStart(4, '0');
+    app.innerHTML = `<div class="crumbbar"><div class="wrap crumbs"><a href="#/">Home</a> › <a href="#/c/${p.cat}">${c ? c.name : ''}</a> › <span>${esc(p.name)}</span></div></div>
+    <div class="wrap pd pd2">
+      <div class="gal ${imgs.length > 1 ? '' : 'one'}">
+        <div class="thumbs">${imgs.map((s, i) => `<button type="button" class="${i ? '' : 'on'}" data-i="${i}"><img src="${esc(s)}" alt=""></button>`).join('')}</div>
+        <div class="main-img zoom" id="zoomBox"><img id="mainImg" src="${esc(imgs[0])}" alt="${esc(p.name)}"><span class="zhint">Hover to zoom</span>
+          ${imgs.length > 1 ? '<button type="button" class="arw l" data-d="-1">‹</button><button type="button" class="arw r" data-d="1">›</button>' : ''}</div>
+      </div>
+      <div class="pinfo"><h1>${esc(p.name)}</h1>${priceHtml(p)}<p class="short">${esc(p.desc)}</p>
         ${p.colors && p.colors.length ? `<div class="opt-label">Colour: <span id="cName">${esc(color)}</span></div><div class="colors">${p.colors.map((x, i) => `<button type="button" class="${i ? '' : 'on'}" data-c="${esc(x[0])}" style="background:${esc(x[1])}" title="${esc(x[0])}"></button>`).join('')}</div>` : ''}
-        ${p.sizes && p.sizes.length ? `<div class="opt-label">Size</div><div class="sizes">${p.sizes.map((s, i) => `<button type="button" class="${i ? '' : 'on'}" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
+        ${p.sizes && p.sizes.length ? `<div class="opt-label">Size: <span id="sName">${esc(size)}</span>${chart ? ' <a href="#" id="chartLink" class="chartlink">Size chart</a>' : ''}</div><div class="sizes">${p.sizes.map((s, i) => `<button type="button" class="${i ? '' : 'on'}" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
         <div class="buy"><div class="qty"><button type="button" data-q="-1">−</button><input id="qty" value="1" inputmode="numeric"><button type="button" data-q="1">+</button></div>
-          <button class="btn" id="addBtn" style="flex:1">Add to cart</button></div>
+          <button class="btn" id="addBtn" style="flex:1">Add to cart</button><button type="button" class="heart sq ${wish().includes(p.id) ? 'on' : ''}" data-wish="${p.id}">${wish().includes(p.id) ? '♥' : '♡'}</button></div>
         <button class="btn ghost block" id="buyBtn">Buy now</button>
-        <div class="perks" style="margin-top:24px"><span>✓ Cash on Delivery all over Bangladesh</span><span>✓ Delivery in 2–4 days</span><span>✓ 7-day size exchange</span></div></div></div>`;
-    const zb = document.getElementById('zoomBox'), zi = zb.querySelector('img');
-    zb.onmousemove = e => { const r = zb.getBoundingClientRect(); zi.style.transformOrigin = ((e.clientX - r.left) / r.width * 100) + '% ' + ((e.clientY - r.top) / r.height * 100) + '%'; zb.classList.add('on'); };
+        <div class="acc">
+          <details open><summary>Description & Size Chart</summary><div class="acc-b"><p>${esc(p.desc)}</p><ul><li>Premium quality fabric</li><li>Colour-fast, pre-washed</li><li>Machine wash cold, dry in shade</li></ul>
+            ${chart ? `<table class="chart" id="sizeChart">${chart.map((r, i) => `<tr>${r.map(v => i ? `<td>${v}</td>` : `<th>${v}</th>`).join('')}</tr>`).join('')}</table>` : ''}</div></details>
+          <details><summary>Delivery & Exchange</summary><div class="acc-b"><p>Inside Dhaka: 1–2 days (৳70, free over ৳3,000). Outside Dhaka: 2–4 days (৳130).</p><p>Wrong size? Exchange within 7 days. Item must be unused with tags.</p></div></details>
+        </div>
+        <div class="pays"><span>COD</span><span>VISA</span><span>Mastercard</span><span class="bk">bKash</span><span class="ng">Nagad</span></div>
+        <p class="meta">SKU: ${sku}<br>Category: ${c ? c.name : ''}</p>
+      </div></div>
+    ${related.length ? `<section class="sec" style="padding-top:20px"><div class="wrap"><div class="sec-head"><h2>You may also like</h2><a href="#/c/${p.cat}">View all</a></div><div class="grid">${related.map(card).join('')}</div></div></section>` : ''}
+    ${recent.length ? `<section class="rv"><h3>Recently viewed</h3><div class="rv-row">${recent.map(x => `<a href="#/p/${esc(x.slug)}"><img src="${esc(x.img)}" alt=""><span>${esc(x.name)}</span></a>`).join('')}</div></section>` : ''}
+    <div class="stickybar" id="sticky"><div class="wrap sb-in"><img src="${esc(p.img)}" alt=""><div class="sb-t"><b>${esc(p.name)}</b><span>${money(now(p))}</span></div>
+      ${p.sizes && p.sizes.length ? `<select id="sbSize">${p.sizes.map(s => `<option>${esc(s)}</option>`).join('')}</select>` : ''}<button class="btn" id="sbAdd">Add to cart</button></div></div>`;
+    const zb = document.getElementById('zoomBox'), zi = document.getElementById('mainImg');
+    zb.onmousemove = e => { if (e.target.closest('.arw')) return; const r = zb.getBoundingClientRect(); zi.style.transformOrigin = ((e.clientX - r.left) / r.width * 100) + '% ' + ((e.clientY - r.top) / r.height * 100) + '%'; zb.classList.add('on'); };
     zb.onmouseleave = () => zb.classList.remove('on');
-    zb.onclick = () => zb.classList.toggle('tap');
+    zb.onclick = e => { if (!e.target.closest('.arw')) zb.classList.toggle('tap'); };
+    const show = i => { cur = (i + imgs.length) % imgs.length; zi.src = imgs[cur]; app.querySelectorAll('.thumbs button').forEach((b, k) => b.classList.toggle('on', k === cur)); };
+    app.querySelectorAll('.thumbs button').forEach(b => b.onclick = () => show(+b.dataset.i));
+    app.querySelectorAll('.arw').forEach(b => b.onclick = e => { e.stopPropagation(); show(cur + +b.dataset.d); });
     app.querySelectorAll('.colors button').forEach(b => b.onclick = () => { app.querySelectorAll('.colors button').forEach(x => x.classList.remove('on')); b.classList.add('on'); color = b.dataset.c; document.getElementById('cName').textContent = color; });
-    app.querySelectorAll('.sizes button').forEach(b => b.onclick = () => { app.querySelectorAll('.sizes button').forEach(x => x.classList.remove('on')); b.classList.add('on'); size = b.dataset.s; });
+    const setSize = s => { size = s; app.querySelectorAll('.sizes button').forEach(x => x.classList.toggle('on', x.dataset.s === s)); const sn = document.getElementById('sName'); if (sn) sn.textContent = s; const ss = document.getElementById('sbSize'); if (ss) ss.value = s; };
+    app.querySelectorAll('.sizes button').forEach(b => b.onclick = () => setSize(b.dataset.s));
+    const cl = document.getElementById('chartLink'); if (cl) cl.onclick = e => { e.preventDefault(); const d = app.querySelector('.acc details'); d.open = true; document.getElementById('sizeChart').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
     const q = document.getElementById('qty');
     app.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { q.value = Math.max(1, (parseInt(q.value) || 1) + +b.dataset.q); });
     const add = () => {
       const cart = RS.cart(); const key = p.id + '|' + color + '|' + size;
       const line = cart.find(l => l.key === key); const n = Math.max(1, parseInt(q.value) || 1);
       if (line) line.qty += n; else cart.push({ key, id: p.id, color, size, qty: n });
-      RS.saveCart(cart); updateCount(); toast('Added to cart');
+      RS.saveCart(cart); updateCount(); toast('Added to cart' + (size ? ' (' + size + ')' : ''));
     };
     document.getElementById('addBtn').onclick = add;
     document.getElementById('buyBtn').onclick = () => { add(); location.hash = '#/checkout'; };
+    const ss = document.getElementById('sbSize'); if (ss) ss.onchange = () => setSize(ss.value);
+    document.getElementById('sbAdd').onclick = add;
+    const sticky = document.getElementById('sticky'), ab = document.getElementById('addBtn');
+    const io = new IntersectionObserver(([en]) => sticky.classList.toggle('show', !en.isIntersecting && en.boundingClientRect.top < 0));
+    io.observe(ab);
   }
   function lines() {
     const ps = RS.products();
