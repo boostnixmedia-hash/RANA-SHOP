@@ -22,9 +22,11 @@ window.RS = (function () {
   function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
   function now(p) { return p.sale && p.sale < p.price ? p.sale : p.price; }
   // Email verification codes are sent with EmailJS (free plan). Fill these 3 values from emailjs.com to turn on real emails.
+  // Shop contact shown to customers after an order and in the email.
+  const SHOP = { whatsapp: '01XXXXXXXXX' };
   const EMAILJS = { publicKey: '', serviceId: '', templateId: '' };
   return {
-    EMAILJS, CATS, ls, products, saveProducts, slugify, money, esc, now,
+    SHOP, EMAILJS, CATS, ls, products, saveProducts, slugify, money, esc, now,
     cat: s => CATS.find(c => c.slug === s),
     cart: () => ls.get('rs_cart', []), saveCart: c => ls.set('rs_cart', c),
     orders: () => ls.get('rs_orders', []), saveOrders: o => ls.set('rs_orders', o),

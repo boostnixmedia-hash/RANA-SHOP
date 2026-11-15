@@ -114,8 +114,7 @@
     <form class="wrap co" id="coForm"><div>
       <label>Full name *<input name="name" required></label>
       <label>Mobile number *<input name="phone" required pattern="(\\+?88)?01[3-9][0-9]{8}" placeholder="01XXXXXXXXX"></label>
-      <label>Gmail *<div style="display:flex;gap:8px;margin-top:6px"><input name="email" id="email" type="email" required placeholder="yourname@gmail.com" style="margin:0;flex:1"><button type="button" class="btn sm" id="sendCode" style="white-space:nowrap">Send code</button></div></label>
-      <div id="codeBox" hidden><label>Code from your Gmail *<input name="code" id="code" inputmode="numeric" maxlength="6" placeholder="6-digit code"></label><p id="codeMsg" style="font-size:.85rem;margin:-6px 0 14px;color:var(--muted)"></p></div>
+      <label>Gmail * <small style="color:var(--muted)">(we will email your order details)</small><input name="email" id="email" type="email" required placeholder="yourname@gmail.com"></label>
       <label>Full address *<textarea name="address" rows="2" required placeholder="House, road, area"></textarea></label>
       <label>Delivery area<select name="zone" id="zone"><option value="inside">Inside Dhaka (৳70, free over ৳3,000)</option><option value="outside">Outside Dhaka (৳130)</option></select></label>
       <label>Note (optional)<input name="note"></label>
@@ -131,38 +130,32 @@
       <div class="row" style="border-top:1px solid var(--line);margin-top:8px;padding-top:12px"><span>Subtotal</span><span>${money(t.sub)}</span></div><div class="row"><span>Delivery</span><span>${t.ship ? money(t.ship) : 'Free'}</span></div>
       <div class="row total"><span>Total</span><span>${money(t.total)}</span></div><button class="btn block" style="margin-top:18px">Place order</button>`; };
     zone.onchange = draw; draw();
-    let sent = null, sentTo = '';
-    const msg = (t, bad) => { const m = document.getElementById('codeMsg'); m.textContent = t; m.style.color = bad ? 'var(--sale)' : 'var(--muted)'; };
-    document.getElementById('sendCode').onclick = async () => {
-      const em = document.getElementById('email'); const btn = document.getElementById('sendCode');
-      if (!em.checkValidity()) { em.reportValidity(); return; }
-      sent = String(Math.floor(100000 + Math.random() * 900000)); sentTo = em.value.trim().toLowerCase();
-      document.getElementById('codeBox').hidden = false; btn.disabled = true; btn.textContent = 'Sending...';
-      const cfg = RS.EMAILJS;
-      if (cfg.publicKey && cfg.serviceId && cfg.templateId && window.emailjs) {
-        try {
-          await emailjs.send(cfg.serviceId, cfg.templateId, { to_email: sentTo, code: sent, name: (document.querySelector('[name=name]').value || 'Customer') }, { publicKey: cfg.publicKey });
-          msg('We sent a 6-digit code to ' + sentTo + '. Check Inbox or Spam.');
-        } catch (err) { msg('Could not send the email. Please try again.', true); sent = null; }
-      } else {
-        msg('Demo mode: email sending is not connected yet, so the code is shown here: ' + sent);
-      }
-      btn.disabled = false; btn.textContent = 'Resend code';
-    };
     document.getElementById('coForm').onsubmit = e => {
       e.preventDefault(); const f = new FormData(e.target); const t = totals(ls, f.get('zone'));
-      if (!sent || f.get('email').trim().toLowerCase() !== sentTo) { document.getElementById('codeBox').hidden = false; msg('Please tap "Send code" and enter the code from your Gmail.', true); return; }
-      if ((f.get('code') || '').trim() !== sent) { msg('The code is not correct.', true); document.getElementById('code').focus(); return; }
+      const sentTo = f.get('email').trim().toLowerCase();
       const orders = RS.orders(); const no = 'RS' + (1001 + orders.length);
       orders.unshift({ no, date: new Date().toISOString(), name: f.get('name'), email: sentTo, phone: f.get('phone'), address: f.get('address'), zone: f.get('zone'), note: f.get('note'), pay: f.get('pay'), status: 'Pending',
         items: ls.map(l => ({ name: l.p.name, img: l.p.img, color: l.color, size: l.size, qty: l.qty, price: now(l.p) })), ...t });
-      RS.saveOrders(orders); RS.saveCart([]); updateCount(); location.hash = '#/done/' + no;
+      RS.saveOrders(orders); RS.saveCart([]); updateCount(); sendOrderMail(orders[0]); location.hash = '#/done/' + no;
     };
   }
+  function sendOrderMail(o) {
+    const cfg = RS.EMAILJS;
+    if (!(cfg.publicKey && cfg.serviceId && cfg.templateId && window.emailjs)) return;
+    const items = o.items.map(i => `${i.name} (${[i.color, i.size].filter(Boolean).join(' / ')}) x ${i.qty} = ${money(i.price * i.qty)}`).join('\n');
+    emailjs.send(cfg.serviceId, cfg.templateId, { to_email: o.email, name: o.name, order_no: o.no, items, total: money(o.total), payment: o.pay, address: o.address, whatsapp: RS.SHOP.whatsapp },
+      { publicKey: cfg.publicKey }).catch(() => {});
+  }
   function done(no) {
-    app.innerHTML = `<div class="wrap done"><div class="mark" style="margin:0 auto 22px;width:64px;height:64px;font-size:2rem">✓</div><h1>Thank you!</h1>
-      <p style="color:var(--muted);margin-bottom:8px">Your order <b>${esc(no)}</b> has been placed.</p><p style="color:var(--muted);margin-bottom:28px">We will call you soon to confirm.</p>
-      <a class="btn" href="#/shop">Continue shopping</a></div>`;
+    const o = RS.orders().find(x => x.no === no) || {};
+    const wa = RS.SHOP.whatsapp.replace(/\D/g, '').replace(/^0/, '880');
+    const mailOn = RS.EMAILJS.publicKey && RS.EMAILJS.serviceId && RS.EMAILJS.templateId;
+    app.innerHTML = `<div class="wrap done"><img src="img/logo-mark.png" alt="" style="width:72px;margin:0 auto 22px;border-radius:50%"><h1>Thank you!</h1>
+      <p style="color:var(--muted);margin-bottom:6px">Your order has been placed.</p>
+      <p style="font-size:1.4rem;margin-bottom:6px">Order number: <b>${esc(no)}</b></p>
+      ${o.email && mailOn ? `<p style="color:var(--muted);margin-bottom:6px">We sent the details to <b>${esc(o.email)}</b>.</p>` : ''}
+      <p style="color:var(--muted);margin-bottom:28px">For any question, message us on WhatsApp: <b>${esc(RS.SHOP.whatsapp)}</b></p>
+      <a class="btn" target="_blank" href="https://wa.me/${wa}?text=${encodeURIComponent('Hi, my order number is ' + no)}">WhatsApp us</a> <a class="btn ghost" href="#/shop">Continue shopping</a></div>`;
   }
   function route() {
     const h = location.hash.replace(/^#\/?/, '').split('/');
