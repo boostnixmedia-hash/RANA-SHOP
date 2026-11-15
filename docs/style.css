@@ -588,3 +588,8 @@ a.on,.filters a.on{border-color:var(--rd)}
 @media(max-width:900px){.side{padding:8px 12px}.side a.logo{padding:0 6px 0 0;flex:none}.side a.logo span{display:none}.side .mark-img{width:34px;height:34px}.side a.on,.side a:hover{border-left:0;border-bottom:2px solid var(--rd)}}
 @media(max-width:900px){.adm{align-content:start;grid-template-rows:auto 1fr}}
 .kl-tiles .hand{display:none!important}
+/* no looping animations (owner: lag) - entrance only */
+.kl-btn.big::after{display:none!important;animation:none!important}
+.kl-btn.big{animation:none!important;box-shadow:0 8px 18px rgba(201,47,27,.3);transition:transform .15s}
+.kl-brand>span,.kl-brand b{animation:klIn .8s cubic-bezier(.2,1.5,.4,1) both!important;animation-delay:calc(var(--i)*.08s)!important;will-change:auto}
+.kl-tiles .hand{animation:none!important}
