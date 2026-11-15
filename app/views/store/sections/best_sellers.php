@@ -1,0 +1,1 @@
+<section <?= sec_attr($s) ?> id="<?= $sid ?>"><div class="wrap"><?= sec_head($s) ?><?= sec_products(product_query(['sort' => 'best', 'per' => max(1, min(24, (int)($s['limit'] ?? 8)))])['items'], $s) ?></div></section>

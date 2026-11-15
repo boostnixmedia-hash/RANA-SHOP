@@ -1,0 +1,5 @@
+app/config.php
+app/secrets.php
+uploads/*
+!uploads/.htaccess
+.DS_Store

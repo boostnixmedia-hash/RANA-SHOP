@@ -1,0 +1,393 @@
+-- Rana Shop: initial schema (MySQL 5.7+/MariaDB 10.3+, InnoDB, utf8mb4)
+
+CREATE TABLE settings (
+  k VARCHAR(100) NOT NULL PRIMARY KEY,
+  v MEDIUMTEXT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE admins (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  pass_hash VARCHAR(255) NOT NULL,
+  role ENUM('super_admin','manager','order_manager','product_manager') NOT NULL DEFAULT 'manager',
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  failed_count INT NOT NULL DEFAULT 0,
+  locked_until DATETIME NULL,
+  last_login DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE activity_log (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  admin_id INT UNSIGNED NULL,
+  admin_name VARCHAR(120) NOT NULL DEFAULT '',
+  action VARCHAR(80) NOT NULL,
+  entity VARCHAR(40) NOT NULL DEFAULT '',
+  entity_id BIGINT NULL,
+  details TEXT NULL,
+  ip VARCHAR(64) NOT NULL DEFAULT '',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX (created_at), INDEX (admin_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE rate_limits (
+  k VARCHAR(190) NOT NULL,
+  at INT UNSIGNED NOT NULL,
+  INDEX (k, at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE categories (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  parent_id INT UNSIGNED NULL,
+  name VARCHAR(120) NOT NULL,
+  slug VARCHAR(140) NOT NULL UNIQUE,
+  description TEXT NULL,
+  image VARCHAR(255) NULL,
+  sort INT NOT NULL DEFAULT 0,
+  visible TINYINT(1) NOT NULL DEFAULT 1,
+  in_menu TINYINT(1) NOT NULL DEFAULT 1,
+  seo_title VARCHAR(190) NULL,
+  seo_desc VARCHAR(320) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_cat_parent FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE collections (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  slug VARCHAR(170) NOT NULL UNIQUE,
+  description TEXT NULL,
+  cover VARCHAR(255) NULL,
+  kind ENUM('regular','seasonal','limited') NOT NULL DEFAULT 'regular',
+  featured TINYINT(1) NOT NULL DEFAULT 0,
+  visible TINYINT(1) NOT NULL DEFAULT 1,
+  sort INT NOT NULL DEFAULT 0,
+  seo_title VARCHAR(190) NULL,
+  seo_desc VARCHAR(320) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE products (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(190) NOT NULL,
+  slug VARCHAR(210) NOT NULL UNIQUE,
+  sku VARCHAR(80) NULL UNIQUE,
+  short_desc VARCHAR(500) NULL,
+  description MEDIUMTEXT NULL,
+  price DECIMAL(10,2) NOT NULL DEFAULT 0,
+  sale_price DECIMAL(10,2) NULL,
+  cost_price DECIMAL(10,2) NULL,
+  category_id INT UNSIGNED NULL,
+  tags VARCHAR(500) NOT NULL DEFAULT '',
+  video_url VARCHAR(500) NULL,
+  status ENUM('draft','active','archived') NOT NULL DEFAULT 'draft',
+  featured TINYINT(1) NOT NULL DEFAULT 0,
+  publish_at DATETIME NULL,
+  seo_title VARCHAR(190) NULL,
+  seo_desc VARCHAR(320) NULL,
+  sold_count INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX (status, publish_at), INDEX (category_id), INDEX (featured), INDEX (sold_count), INDEX (created_at),
+  FULLTEXT KEY ft_search (name, short_desc, tags),
+  CONSTRAINT fk_prod_cat FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE product_images (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id INT UNSIGNED NOT NULL,
+  path VARCHAR(255) NOT NULL,
+  alt VARCHAR(190) NOT NULL DEFAULT '',
+  sort INT NOT NULL DEFAULT 0,
+  is_featured TINYINT(1) NOT NULL DEFAULT 0,
+  INDEX (product_id, sort),
+  CONSTRAINT fk_img_prod FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE product_collections (
+  product_id INT UNSIGNED NOT NULL,
+  collection_id INT UNSIGNED NOT NULL,
+  sort INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (product_id, collection_id),
+  INDEX (collection_id, sort),
+  CONSTRAINT fk_pc_prod FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  CONSTRAINT fk_pc_col FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE variants (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id INT UNSIGNED NOT NULL,
+  color VARCHAR(60) NOT NULL DEFAULT '',
+  color_hex VARCHAR(9) NOT NULL DEFAULT '',
+  size VARCHAR(30) NOT NULL DEFAULT '',
+  sku VARCHAR(100) NOT NULL UNIQUE,
+  stock INT NOT NULL DEFAULT 0,
+  price DECIMAL(10,2) NULL,
+  image_id INT UNSIGNED NULL,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  sort INT NOT NULL DEFAULT 0,
+  UNIQUE KEY uq_variant (product_id, color, size),
+  INDEX (stock),
+  CONSTRAINT fk_var_prod FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  CONSTRAINT fk_var_img FOREIGN KEY (image_id) REFERENCES product_images(id) ON DELETE SET NULL,
+  CONSTRAINT chk_stock CHECK (stock >= 0)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE stock_log (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  variant_id INT UNSIGNED NULL,
+  product_id INT UNSIGNED NULL,
+  change_qty INT NOT NULL,
+  stock_after INT NOT NULL,
+  reason VARCHAR(40) NOT NULL,
+  ref VARCHAR(80) NOT NULL DEFAULT '',
+  admin_id INT UNSIGNED NULL,
+  admin_name VARCHAR(120) NOT NULL DEFAULT '',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX (product_id, created_at), INDEX (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE customers (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  phone VARCHAR(30) NOT NULL DEFAULT '',
+  pass_hash VARCHAR(255) NULL,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  last_login DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX (phone), INDEX (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE addresses (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT UNSIGNED NOT NULL,
+  label VARCHAR(60) NOT NULL DEFAULT 'Home',
+  name VARCHAR(120) NOT NULL,
+  phone VARCHAR(30) NOT NULL,
+  district VARCHAR(60) NOT NULL,
+  area VARCHAR(120) NOT NULL,
+  address VARCHAR(500) NOT NULL,
+  is_default TINYINT(1) NOT NULL DEFAULT 0,
+  CONSTRAINT fk_addr_cust FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE password_resets (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  kind ENUM('customer','admin') NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  expires_at DATETIME NOT NULL,
+  used TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE wishlists (
+  customer_id INT UNSIGNED NOT NULL,
+  product_id INT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (customer_id, product_id),
+  CONSTRAINT fk_wl_cust FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE,
+  CONSTRAINT fk_wl_prod FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE reviews (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id INT UNSIGNED NOT NULL,
+  customer_id INT UNSIGNED NULL,
+  name VARCHAR(120) NOT NULL,
+  rating TINYINT NOT NULL,
+  body TEXT NOT NULL,
+  images TEXT NULL,
+  verified TINYINT(1) NOT NULL DEFAULT 0,
+  status ENUM('pending','approved','hidden') NOT NULL DEFAULT 'pending',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX (product_id, status),
+  CONSTRAINT fk_rev_prod FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rev_cust FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL,
+  CONSTRAINT chk_rating CHECK (rating BETWEEN 1 AND 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE coupons (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(40) NOT NULL UNIQUE,
+  description VARCHAR(255) NOT NULL DEFAULT '',
+  type ENUM('percent','fixed') NOT NULL DEFAULT 'percent',
+  value DECIMAL(10,2) NOT NULL,
+  min_purchase DECIMAL(10,2) NOT NULL DEFAULT 0,
+  max_discount DECIMAL(10,2) NULL,
+  starts_at DATETIME NULL,
+  ends_at DATETIME NULL,
+  usage_limit INT NULL,
+  per_customer_limit INT NULL,
+  used_count INT NOT NULL DEFAULT 0,
+  customer_email VARCHAR(190) NULL,
+  product_ids VARCHAR(1000) NOT NULL DEFAULT '',
+  category_ids VARCHAR(1000) NOT NULL DEFAULT '',
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE orders (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_no VARCHAR(20) NOT NULL UNIQUE,
+  customer_id INT UNSIGNED NULL,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  phone VARCHAR(30) NOT NULL,
+  district VARCHAR(60) NOT NULL,
+  area VARCHAR(120) NOT NULL,
+  address VARCHAR(500) NOT NULL,
+  note VARCHAR(1000) NOT NULL DEFAULT '',
+  shipping_zone ENUM('inside','outside') NOT NULL,
+  subtotal DECIMAL(10,2) NOT NULL,
+  discount DECIMAL(10,2) NOT NULL DEFAULT 0,
+  shipping DECIMAL(10,2) NOT NULL DEFAULT 0,
+  total DECIMAL(10,2) NOT NULL,
+  coupon_code VARCHAR(40) NULL,
+  payment_method ENUM('cod','bkash','nagad','sslcommerz') NOT NULL DEFAULT 'cod',
+  payment_status ENUM('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
+  status ENUM('new','pending','confirmed','processing','shipped','delivered','cancelled','returned') NOT NULL DEFAULT 'new',
+  courier VARCHAR(60) NOT NULL DEFAULT '',
+  tracking_no VARCHAR(120) NOT NULL DEFAULT '',
+  courier_ref VARCHAR(120) NOT NULL DEFAULT '',
+  admin_note TEXT NULL,
+  idem_key CHAR(32) NOT NULL UNIQUE,
+  seen TINYINT(1) NOT NULL DEFAULT 0,
+  stock_restored TINYINT(1) NOT NULL DEFAULT 0,
+  access_token CHAR(32) NOT NULL,
+  ip VARCHAR(64) NOT NULL DEFAULT '',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX (status), INDEX (created_at), INDEX (email), INDEX (phone), INDEX (customer_id), INDEX (payment_status),
+  CONSTRAINT fk_ord_cust FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE order_items (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id INT UNSIGNED NOT NULL,
+  product_id INT UNSIGNED NULL,
+  variant_id INT UNSIGNED NULL,
+  name VARCHAR(190) NOT NULL,
+  sku VARCHAR(100) NOT NULL DEFAULT '',
+  color VARCHAR(60) NOT NULL DEFAULT '',
+  size VARCHAR(30) NOT NULL DEFAULT '',
+  image VARCHAR(255) NOT NULL DEFAULT '',
+  price DECIMAL(10,2) NOT NULL,
+  qty INT NOT NULL,
+  line_total DECIMAL(10,2) NOT NULL,
+  INDEX (order_id), INDEX (product_id),
+  CONSTRAINT fk_oi_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE order_history (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id INT UNSIGNED NOT NULL,
+  status VARCHAR(40) NOT NULL,
+  note VARCHAR(500) NOT NULL DEFAULT '',
+  admin_name VARCHAR(120) NOT NULL DEFAULT '',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX (order_id),
+  CONSTRAINT fk_oh_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE coupon_uses (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  coupon_id INT UNSIGNED NOT NULL,
+  order_id INT UNSIGNED NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX (coupon_id, email),
+  CONSTRAINT fk_cu_coupon FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE,
+  CONSTRAINT fk_cu_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE payments (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id INT UNSIGNED NOT NULL,
+  method VARCHAR(20) NOT NULL,
+  tran_id VARCHAR(80) NOT NULL UNIQUE,
+  amount DECIMAL(10,2) NOT NULL,
+  status ENUM('initiated','paid','failed','cancelled','refunded') NOT NULL DEFAULT 'initiated',
+  gateway_ref VARCHAR(190) NOT NULL DEFAULT '',
+  raw MEDIUMTEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX (order_id),
+  CONSTRAINT fk_pay_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE email_templates (
+  tkey VARCHAR(40) NOT NULL PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  subject VARCHAR(255) NOT NULL,
+  body MEDIUMTEXT NOT NULL,
+  enabled TINYINT(1) NOT NULL DEFAULT 1,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE email_queue (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  idem_key VARCHAR(120) NOT NULL UNIQUE,
+  to_email VARCHAR(190) NOT NULL,
+  to_name VARCHAR(120) NOT NULL DEFAULT '',
+  subject VARCHAR(255) NOT NULL,
+  html MEDIUMTEXT NOT NULL,
+  template_key VARCHAR(40) NOT NULL DEFAULT '',
+  order_id INT UNSIGNED NULL,
+  status ENUM('queued','sending','sent','failed') NOT NULL DEFAULT 'queued',
+  attempts INT NOT NULL DEFAULT 0,
+  last_error VARCHAR(1000) NOT NULL DEFAULT '',
+  provider_id VARCHAR(190) NOT NULL DEFAULT '',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  sent_at DATETIME NULL,
+  INDEX (status, created_at), INDEX (order_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE pages (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  slug VARCHAR(120) NOT NULL UNIQUE,
+  title VARCHAR(190) NOT NULL,
+  body MEDIUMTEXT NULL,
+  seo_title VARCHAR(190) NULL,
+  seo_desc VARCHAR(320) NULL,
+  visible TINYINT(1) NOT NULL DEFAULT 1,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE menus (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  location VARCHAR(20) NOT NULL,
+  label VARCHAR(80) NOT NULL,
+  url VARCHAR(255) NOT NULL,
+  sort INT NOT NULL DEFAULT 0,
+  INDEX (location, sort)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE contacts (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(190) NOT NULL,
+  phone VARCHAR(30) NOT NULL DEFAULT '',
+  subject VARCHAR(190) NOT NULL DEFAULT '',
+  message TEXT NOT NULL,
+  seen TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE newsletter (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE notifications (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  type VARCHAR(30) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  link VARCHAR(255) NOT NULL DEFAULT '',
+  seen TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX (seen, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

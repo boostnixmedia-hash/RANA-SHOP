@@ -1,0 +1,1 @@
+<section class="wrap narrow center" style="padding:90px 16px"><p class="eyebrow">404</p><h1>Page not found</h1><p class="muted">The page you're looking for doesn't exist or has moved.</p><div class="btns center"><a class="btn" href="<?= e(url('/')) ?>">Go home</a><a class="btn ghost" href="<?= e(url('shop')) ?>">Shop all</a></div></section>
