@@ -45,24 +45,36 @@
       <div class="box"><h2>Latest orders</h2>${ordersTable(os.slice(0, 5))}</div>
       <div class="box" style="font-size:.88rem;color:var(--muted)">This is a demo. Products and orders you add are saved in this browser only.
         <a href="#" id="reset" style="color:var(--sale);margin-left:8px">Reset demo data</a></div>`);
+    bindOrders();
     document.getElementById('reset').onclick = e => { e.preventDefault(); if (confirm('Reset all demo products and orders?')) { RS.reset(); route(); } };
   }
   function ordersTable(os) {
     if (!os.length) return '<p style="color:var(--muted)">No orders yet. Place one from the website to see it here.</p>';
-    return `<div style="overflow-x:auto"><table class="tbl"><tr><th>Order</th><th>Customer</th><th class="hide-m">Date</th><th>Total</th><th>Status</th></tr>
-      ${os.map(o => `<tr><td><a href="#/order/${o.no}"><b style="font-weight:500">${o.no}</b></a></td><td>${esc(o.name)}<br><small style="color:var(--muted)">${esc(o.phone)}</small></td>
-      <td class="hide-m">${new Date(o.date).toLocaleString()}</td><td>${money(o.total)}</td><td><span class="pill ${pillCls[o.status]}">${o.status}</span></td></tr>`).join('')}</table></div>`;
+    return `<div style="overflow-x:auto"><table class="tbl"><tr><th>Order</th><th>Customer</th><th class="hide-m">Date</th><th>Total</th><th>Status</th><th></th></tr>
+      ${os.map(o => `<tr class="orow" data-no="${o.no}" style="cursor:pointer"><td><b style="font-weight:500">${o.no}</b></td><td>${esc(o.name)}<br><small style="color:var(--muted)">${esc(o.phone)}</small></td>
+      <td class="hide-m">${new Date(o.date).toLocaleString()}</td><td>${money(o.total)}</td>
+      <td><select class="qs" data-no="${o.no}" style="width:auto;margin:0;padding:6px 8px">${STATUSES.map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}</select></td>
+      <td><a class="btn sm" href="#/order/${o.no}">View</a></td></tr>`).join('')}</table></div>`;
   }
-  function orders() { shell('orders', 'Orders', `<div class="box">${ordersTable(RS.orders())}</div>`); }
+  function bindOrders() {
+    root.querySelectorAll('.qs').forEach(sel => { sel.onclick = e => e.stopPropagation(); sel.onchange = () => { const os = RS.orders(); const o = os.find(x => x.no === sel.dataset.no); o.status = sel.value; RS.saveOrders(os); toast(o.no + ': ' + o.status); }; });
+    root.querySelectorAll('.orow').forEach(r => r.onclick = e => { if (!e.target.closest('a,select')) location.hash = '#/order/' + r.dataset.no; });
+  }
+  function orders() { shell('orders', 'Orders', `<div class="box">${ordersTable(RS.orders())}</div><p style="font-size:.85rem;color:var(--muted)">Tip: change the status right here, or tap an order to see everything.</p>`); bindOrders(); }
   function order(no) {
     const os = RS.orders(); const o = os.find(x => x.no === no);
     if (!o) return orders();
+    const bd = String(o.phone || '').replace(/\D/g, '').replace(/^0/, '880');
     shell('orders', 'Order ' + o.no, `<div class="form2"><div class="box"><h2>Items</h2><table class="tbl">${o.items.map(i => `<tr><td><img src="${src(i.img)}" alt=""></td><td>${esc(i.name)}<br><small style="color:var(--muted)">${esc([i.color, i.size].filter(Boolean).join(' / '))}</small></td><td>× ${i.qty}</td><td>${money(i.price * i.qty)}</td></tr>`).join('')}</table>
       <div style="max-width:300px;margin:16px 0 0 auto"><div class="row"><span>Subtotal</span><span>${money(o.sub)}</span></div><div class="row"><span>Delivery</span><span>${money(o.ship)}</span></div><div class="row total"><span>Total</span><span>${money(o.total)}</span></div></div></div>
       <div><div class="box"><h2>Status</h2><select id="st">${STATUSES.map(s => `<option ${s === o.status ? 'selected' : ''}>${s}</option>`).join('')}</select><button class="btn block" id="saveSt" style="margin-top:12px">Update status</button></div>
-      <div class="box"><h2>Customer</h2><p>${esc(o.name)}<br>${esc(o.phone)}<br>${o.email ? esc(o.email) + ' ✓<br>' : ''}${esc(o.address)}<br>${o.zone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}</p><p style="margin-top:10px"><b style="font-weight:500">Payment:</b> ${esc(o.pay)}</p>${o.note ? `<p><b style="font-weight:500">Note:</b> ${esc(o.note)}</p>` : ''}</div></div></div>`,
+      <div class="box"><h2>Customer</h2><p>${esc(o.name)}<br>${esc(o.phone)}<br>${o.email ? esc(o.email) + ' ✓<br>' : ''}${esc(o.address)}<br>${o.zone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}</p><p style="margin-top:10px"><b style="font-weight:500">Payment:</b> ${esc(o.pay)}</p>${o.note ? `<p><b style="font-weight:500">Note:</b> ${esc(o.note)}</p>` : ''}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px"><a class="btn ghost sm" href="tel:${esc(o.phone)}">📞 Call</a><a class="btn ghost sm" target="_blank" href="https://wa.me/${bd}?text=${encodeURIComponent('Assalamu alaikum ' + o.name + ', your Rana Shop order ' + o.no + ' (' + money(o.total) + ') is ' + o.status + '.')}">WhatsApp</a></div></div>
+      <div class="box"><button class="btn ghost block" id="printBtn">🖨 Print invoice</button><button class="btn danger block" id="delOrder" style="margin-top:8px">Delete order</button></div></div></div>`,
       `<a class="btn ghost sm" href="#/orders">← All orders</a>`);
     document.getElementById('saveSt').onclick = () => { o.status = document.getElementById('st').value; RS.saveOrders(os); toast('Status updated'); route(); };
+    document.getElementById('printBtn').onclick = () => window.print();
+    document.getElementById('delOrder').onclick = () => { if (confirm('Delete order ' + o.no + '?')) { RS.saveOrders(os.filter(x => x.no !== o.no)); toast('Order deleted'); location.hash = '#/orders'; } };
   }
   function products() {
     const ps = RS.products();

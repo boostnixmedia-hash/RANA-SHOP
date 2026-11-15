@@ -6,11 +6,29 @@
   function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200); }
   function updateCount() { document.getElementById('cartCount').textContent = RS.cart().reduce((a, l) => a + l.qty, 0); }
   function priceHtml(p) { return p.sale && p.sale < p.price ? `<div class="price"><span class="now red">${money(p.sale)}</span><s>${money(p.price)}</s></div>` : `<div class="price"><span class="now">${money(p.price)}</span></div>`; }
+  const wish = () => RS.ls.get('rs_wish', []);
   function card(p) {
     const off = p.sale && p.sale < p.price ? Math.round((1 - p.sale / p.price) * 100) : 0;
-    return `<a class="card" href="#/p/${esc(p.slug)}"><div class="ph"><img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy">${off ? `<span class="tag">-${off}%</span>` : p.isNew ? '<span class="tag new">New</span>' : ''}</div>
-      <h3>${esc(p.name)}</h3>${priceHtml(p)}<div class="dots">${(p.colors || []).map(c => `<i style="background:${esc(c[1])}" title="${esc(c[0])}"></i>`).join('')}</div></a>`;
+    const cat = (RS.cat(p.cat) || {}).name || '';
+    const liked = wish().includes(p.id);
+    const cols = p.colors || [];
+    return `<a class="card" href="#/p/${esc(p.slug)}"><div class="ph"><img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy">
+      ${off ? `<span class="tag">-${off}%</span>` : p.isNew ? '<span class="tag new">New</span>' : ''}
+      <button type="button" class="heart ${liked ? 'on' : ''}" data-wish="${p.id}" aria-label="Wishlist">${liked ? '♥' : '♡'}</button>
+      <button type="button" class="qadd" data-add="${p.id}">+ Add to cart</button></div>
+      <div class="ci"><small class="ccat">${esc(cat)}</small><h3>${esc(p.name)}</h3>
+      <div class="cprice">${off ? `<b class="red">${money(p.sale)}</b><s>${money(p.price)}</s><em>Save ${money(p.price - p.sale)}</em>` : `<b>${money(p.price)}</b>`}</div>
+      <div class="dots">${cols.slice(0, 4).map(c => `<i style="background:${esc(c[1])}" title="${esc(c[0])}"></i>`).join('')}${cols.length ? `<span>${cols.length} colour${cols.length > 1 ? 's' : ''}</span>` : ''}</div></div></a>`;
   }
+  document.addEventListener('click', e => {
+    const h = e.target.closest('[data-wish]'), q = e.target.closest('[data-add]');
+    if (!h && !q) return;
+    e.preventDefault(); e.stopPropagation();
+    if (h) { const id = +h.dataset.wish; let w = wish(); const on = !w.includes(id); w = on ? [...w, id] : w.filter(x => x !== id); RS.ls.set('rs_wish', w); h.classList.toggle('on', on); h.textContent = on ? '♥' : '♡'; toast(on ? 'Saved to wishlist' : 'Removed from wishlist'); }
+    if (q) { const p = RS.products().find(x => x.id === +q.dataset.add); if (!p) return; const color = ((p.colors || [])[0] || [''])[0], size = (p.sizes || [])[0] || '';
+      const cart = RS.cart(); const key = p.id + '|' + color + '|' + size; const l = cart.find(x => x.key === key); if (l) l.qty++; else cart.push({ key, id: p.id, color, size, qty: 1 });
+      RS.saveCart(cart); updateCount(); toast('Added: ' + p.name + (size ? ' (' + size + ')' : '')); }
+  });
   const visible = () => RS.products().filter(p => p.status !== 'draft');
 
   function home() {
