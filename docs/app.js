@@ -64,7 +64,7 @@
     ${charts.length ? `<section class="kl-sec kl-chart"><h2 class="c">সাইজ চার্ট</h2><p class="c muted">আপনার সঠিক সাইজ নির্বাচন করুন · মাপ ইঞ্চিতে দেওয়া হয়েছে</p>
       <div class="kl-tabs">${charts.map((c, i) => `<button type="button" class="${i ? '' : 'on'}" data-tab="${c.slug}">${c.name}</button>`).join('')}</div>
       ${charts.map((c, i) => `<table class="kl-tbl" data-t="${c.slug}" ${i ? 'hidden' : ''}>${SIZE_CHART[c.slug].map((r, k) => `<tr>${r.map(v => k ? `<td>${v}</td>` : `<th>${v}</th>`).join('')}</tr>`).join('')}</table>`).join('')}</section>` : ''}
-    <section class="kl-sec" id="order"><h2>অর্ডার করতে নিচের ফর্মটি পূরণ করুন, এবং সাইজ সিলেক্ট করুন</h2><p class="kl-how">প্রোডাক্টের ছবিতে বা সাইজে ক্লিক করলেই অর্ডারে যোগ হবে। একসাথে একাধিক প্রোডাক্টও নিতে পারবেন।</p>
+    <section class="kl-sec" id="order"><h2>অর্ডার করতে নিচের ফর্মটি পূরণ করুন, এবং সাইজ সিলেক্ট করুন</h2><p class="kl-how">প্রোডাক্টের ছবিতে ক্লিক করলে তার অর্ডার পেজ খুলবে। সাইজে ক্লিক করলে সরাসরি এই অর্ডারে যোগ হবে, একসাথে একাধিক প্রোডাক্টও নিতে পারবেন।</p>
       <form class="kl-form" id="klForm" novalidate>
         <div class="kl-prods">${ps.map(p => { const so = p.soldOut || []; return `<div class="kl-pc" data-id="${p.id}"><div class="im"><img src="${esc(p.img)}" alt="" loading="lazy">${p.sale && p.sale < p.price ? `<em>-${Math.round((1 - p.sale / p.price) * 100)}%</em>` : ''}</div>
           <span class="ok">✓ সিলেক্ট হয়েছে</span><b>${esc(p.name)}</b><div class="pr">${p.sale && p.sale < p.price ? `<s>${money(p.price)}</s>` : ''}<span>${money(now(p))}</span></div><small>সাইজ নির্বাচন করুন</small>
@@ -109,11 +109,9 @@
       app.querySelectorAll('#klLines [data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k; pick[k] = (pick[k] || 0) + +b.dataset.d; if (pick[k] <= 0) delete pick[k]; draw(); });
       return { ls, sub, ship, total: sub + ship };
     };
-    // tapping the photo or name picks the first available size (tap again to remove)
+    // tapping the photo or name opens that product's own order page (sizes below still add it straight to this order)
     app.querySelectorAll('.kl-pc').forEach(c => c.onclick = e => { if (e.target.closest('.sz')) return;
-      const keys = Object.keys(pick).filter(k => k.startsWith(c.dataset.id + '|'));
-      if (keys.length) keys.forEach(k => delete pick[k]); else { const b = c.querySelector('.sz button[data-s]'); if (b) pick[c.dataset.id + '|' + b.dataset.s] = 1; else toast('এই প্রোডাক্টের স্টক শেষ'); }
-      draw(); if (!keys.length) toast('অর্ডারে যোগ হয়েছে, চাইলে সাইজ বদলান'); });
+      const p = ps.find(x => x.id === +c.dataset.id); if (p && p.slug) location.hash = '#/p/' + p.slug; });
     app.querySelectorAll('.kl-pc .sz button[data-s]').forEach(b => b.onclick = () => { const k = b.closest('.kl-pc').dataset.id + '|' + b.dataset.s; if (pick[k]) delete pick[k]; else pick[k] = 1; draw(); });
     form.querySelectorAll('input[name=zone]').forEach(r => r.onchange = draw);
     draw();
@@ -361,7 +359,19 @@
       RS.saveOrders(orders); RS.saveCart([]); updateCount(); sendOrderMail(orders[0]); location.hash = '#/done/' + no;
     };
   }
+  function orderText(o) {
+    const items = o.items.map(i => `- ${i.name}${i.size ? ' (' + i.size + ')' : ''} x ${i.qty} = ${money(i.price * i.qty)}`).join('\n');
+    return `New order ${o.no}\nName: ${o.name}\nPhone: ${o.phone}\nAddress: ${o.address}\nZone: ${o.zone === 'inside' ? 'Inside Dhaka' : 'Outside Dhaka'}\n${o.note ? 'Note: ' + o.note + '\n' : ''}\n${items}\nSubtotal: ${money(o.sub)}\nDelivery: ${money(o.ship)}\nTotal: ${money(o.total)} (Cash on Delivery)`;
+  }
+  // send every new order to the shop owner's email so it does not stay only in the customer's browser
+  function notifyOwner(o) {
+    const to = (RS.NOTIFY || {}).email;
+    if (!to) return;
+    fetch('https://formsubmit.co/ajax/' + encodeURIComponent(to), { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ _subject: 'New order ' + o.no + ' - ' + o.name, _template: 'box', _captcha: 'false', name: o.name, phone: o.phone, message: orderText(o) }) }).catch(() => {});
+  }
   function sendOrderMail(o) {
+    notifyOwner(o);
     const cfg = RS.EMAILJS;
     if (!o.email || !(cfg.publicKey && cfg.serviceId && cfg.templateId && window.emailjs)) return;
     const items = o.items.map(i => `${i.name} (${[i.color, i.size].filter(Boolean).join(' / ')}) x ${i.qty} = ${money(i.price * i.qty)}`).join('\n');
@@ -377,7 +387,7 @@
       <p style="font-size:1.4rem;margin-bottom:6px">Order number: <b>${esc(no)}</b></p>
       ${o.email && mailOn ? `<p style="color:var(--muted);margin-bottom:6px">We sent the details to <b>${esc(o.email)}</b>.</p>` : ''}
       <p style="color:var(--muted);margin-bottom:28px">For any question, message us on WhatsApp: <b>${esc(RS.SHOP.whatsapp)}</b></p>
-      <a class="btn" target="_blank" href="https://wa.me/${wa}?text=${encodeURIComponent('Hi, my order number is ' + no)}">WhatsApp us</a> <a class="btn ghost" href="#/shop">Continue shopping</a></div>`;
+      <a class="btn" target="_blank" href="https://wa.me/${wa}?text=${encodeURIComponent(o.no ? orderText(o) : 'Hi, my order number is ' + no)}">WhatsApp-এ অর্ডার পাঠান</a> <a class="btn ghost" href="#/shop">Continue shopping</a></div>`;
   }
   // per-page title, description and Product schema for search engines / link previews
   const BASE = 'https://boostnixmedia-hash.github.io/RANA-SHOP/';

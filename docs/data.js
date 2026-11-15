@@ -28,8 +28,10 @@ window.RS = (function () {
     // Offer countdown on the homepage. Set a real end date/time, or '' to hide the timer.
     offerEnd: '2026-11-30T23:59:00+06:00' };
   const EMAILJS = { publicKey: '', serviceId: '', templateId: '' };
+  // Every new order is emailed to this address (free, via formsubmit.co). Put your email here. The first order sends an activation mail: click Activate once.
+  const NOTIFY = { email: '' };
   return {
-    SHOP, EMAILJS, CATS, ls, products, saveProducts, slugify, money, esc, now,
+    SHOP, EMAILJS, NOTIFY, CATS, ls, products, saveProducts, slugify, money, esc, now,
     cat: s => CATS.find(c => c.slug === s),
     cart: () => ls.get('rs_cart', []), saveCart: c => ls.set('rs_cart', c),
     orders: () => ls.get('rs_orders', []), saveOrders: o => ls.set('rs_orders', o),
