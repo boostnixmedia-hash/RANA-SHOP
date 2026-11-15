@@ -14,7 +14,7 @@ $isPreview = !empty($preview) || (!empty($_GET['preview']) && admin());
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <?= seo_head($seo ?? []) ?>
-<link rel="icon" href="<?= e(($fav = setting('favicon')) ? media($fav) : asset('img/favicon.svg')) ?>">
+<link rel="icon" href="<?= e(($fav = setting('favicon')) ? media($fav) : asset('img/favicon.png')) ?>">
 <meta name="theme-color" content="<?= e($t['background']) ?>">
 <?= theme_fonts_link() ?>
 <link rel="stylesheet" href="<?= asset('css/store.css') ?>">

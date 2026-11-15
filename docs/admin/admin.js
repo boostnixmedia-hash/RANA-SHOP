@@ -9,7 +9,7 @@
 
   function login(err) {
     root.innerHTML = `<div class="login"><form class="box" id="lf" style="padding:34px">
-      <div class="logo" style="justify-content:center;margin-bottom:24px"><i class="mark">R</i><span style="font-size:1.3rem">RANA SHOP</span></div>
+      <div class="logo" style="justify-content:center;margin-bottom:24px"><img class="mark-img" src="../img/logo-mark.png" alt=""><span style="font-size:1.3rem">RANA SHOP</span></div>
       <h1 style="font-family:var(--bf);font-size:1.2rem;font-weight:500;text-align:center;margin-bottom:20px">Admin login</h1>
       ${err ? `<p style="color:var(--sale);margin-bottom:12px;font-size:.9rem">${err}</p>` : ''}
       <label>Email<input name="email" type="email" required value="${EMAIL}"></label>
@@ -25,7 +25,7 @@
   function shell(active, title, body, action) {
     const pending = RS.orders().filter(o => o.status === 'Pending').length;
     root.innerHTML = `<div class="adm"><aside class="side">
-      <a class="logo" href="#/"><i class="mark">R</i><span>RANA SHOP</span></a>
+      <a class="logo" href="#/"><img class="mark-img" src="../img/logo-mark.png" alt=""><span>RANA SHOP</span></a>
       <a href="#/" class="${active === 'dash' ? 'on' : ''}">Dashboard</a>
       <a href="#/orders" class="${active === 'orders' ? 'on' : ''}">Orders ${pending ? `<span class="pill y" style="margin-left:6px">${pending}</span>` : ''}</a>
       <a href="#/products" class="${active === 'products' ? 'on' : ''}">Products</a>

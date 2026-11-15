@@ -109,3 +109,4 @@ label.check{display:flex;gap:8px;align-items:center;font-weight:400}
   .prow{flex-wrap:wrap}.prow .grow{flex-basis:calc(100% - 110px)}.pr,.stk{min-width:0}
   .tbl thead{display:none}.tbl:not(.matrix) tr{display:grid;grid-template-columns:1fr 1fr;padding:8px 0;border-bottom:1px solid #eee}.tbl:not(.matrix) td{border:0;padding:4px 6px}
 }
+.mark-img{width:34px;height:34px;border-radius:50%}
