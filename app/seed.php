@@ -76,10 +76,10 @@ function seed_all(): void {
         ['Formal Trouser', 'pants', 'pant', 1990, null, 950, $waist, [['Charcoal', '#38393d']], 'Wrinkle-resistant formal trouser with a clean crease.', [], 0],
         ['Heavyweight Oversized Tee', 't-shirts', 'tee', 990, 850, 380, $tops, [['Black', '#161616'], ['White', '#f6f4ef'], ['Sand', '#d8c8ac']], '240 GSM combed cotton, dropped shoulders, boxy fit.', ['new-season-2027'], 1],
         ['Essential Crew Neck Tee', 't-shirts', 'tee', 690, null, 260, $tops, [['Navy', '#1f2b45'], ['Grey', '#9a9a9a']], '180 GSM soft cotton for everyday wear.', ['premium-essentials'], 0],
-        ['Piqué Polo Shirt', 't-shirts', 'polo', 1290, 1090, 520, $tops, [['Forest', '#1f4d3c'], ['White', '#f8f8f6']], 'Classic piqué polo with a ribbed collar.', ['limited-edition'], 1],
-        ['Graphic Print Tee', 't-shirts', 'tee', 890, null, 340, $tops, [['Maroon', '#6e1f2a']], 'Soft-hand screen print on combed cotton.', [], 0],
+        ['Light Blue Oxford Shirt', 'shirts', 'shirt', 1290, 1090, 520, $tops, [['Sky Blue', '#bcd3ea']], 'Classic piqué polo with a ribbed collar.', ['limited-edition'], 1],
+        ['Classic Red Crew Tee', 't-shirts', 'tee', 890, null, 340, $tops, [['Red', '#c0272d']], 'Soft combed cotton crew neck tee.', [], 0],
         ['Leather Low-Top Sneaker', 'shoes', 'shoe', 3990, 3490, 2100, $shoe, [['White', '#f4f2ee'], ['Black', '#1a1a1a']], 'Full-grain leather upper with a cushioned rubber sole.', ['new-season-2027'], 1],
-        ['Suede Penny Loafer', 'shoes', 'shoe', 4290, null, 2300, $shoe, [['Tan', '#9b6b43']], 'Soft suede loafer, hand-stitched, leather lining.', ['limited-edition'], 1],
+        ['Double Monk Strap Shoe', 'shoes', 'shoe', 4290, null, 2300, $shoe, [['Tan', '#9b6b43']], 'Polished leather double monk strap, leather lining.', ['limited-edition'], 1],
         ['Oxford Formal Shoe', 'shoes', 'shoe', 4590, 3990, 2500, $shoe, [['Black', '#151515'], ['Brown', '#5a3a26']], 'Polished leather Oxford for weddings and office.', ['premium-essentials'], 0],
         ['Canvas Everyday Sneaker', 'shoes', 'shoe', 2190, null, 1100, $shoe, [['Navy', '#283a5c'], ['Off White', '#efebe2']], 'Lightweight canvas sneaker for everyday wear.', [], 0],
     ];
@@ -94,7 +94,7 @@ function seed_all(): void {
         $vs = 0;
         foreach ($colors as $ci => [$cname, $hex]) {
             $isCheck = str_contains($name, 'Check');
-            $img = demo_file("p$n-$ci", demo_art($type, $hex, '#f1ece4', $isCheck));
+            $img = is_file(__DIR__ . "/seed-photos/s$n.webp") ? demo_photo("s$n") : demo_file("p$n-$ci", demo_art($type, $hex, '#f1ece4', $isCheck));
             $imgId = insert('product_images', ['product_id' => $pid, 'path' => $img, 'alt' => "$name - $cname", 'sort' => $ci, 'is_featured' => $ci === 0 ? 1 : 0]);
             foreach ($sizes as $s) {
                 insert('variants', ['product_id' => $pid, 'color' => $cname, 'color_hex' => $hex, 'size' => $s, 'sku' => 'RS' . str_pad((string)$n, 4, '0', STR_PAD_LEFT) . '-' . strtoupper(substr(preg_replace('/\s/', '', $cname), 0, 3)) . '-' . $s,

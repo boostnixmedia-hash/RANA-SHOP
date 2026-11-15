@@ -127,7 +127,7 @@ window.SEED=[
   "sale": 1590,
   "featured": 1,
   "cat": "shirts",
-  "img": "img/p1-0.svg",
+  "img": "img/s1.webp",
   "sizes": [
    "S",
    "M",
@@ -155,7 +155,7 @@ window.SEED=[
   "sale": null,
   "featured": 1,
   "cat": "shirts",
-  "img": "img/p2-0.svg",
+  "img": "img/s2.webp",
   "sizes": [
    "S",
    "M",
@@ -183,7 +183,7 @@ window.SEED=[
   "sale": 1490,
   "featured": 0,
   "cat": "shirts",
-  "img": "img/p3-0.svg",
+  "img": "img/s3.webp",
   "sizes": [
    "S",
    "M",
@@ -207,7 +207,7 @@ window.SEED=[
   "sale": null,
   "featured": 0,
   "cat": "shirts",
-  "img": "img/p4-0.svg",
+  "img": "img/s4.webp",
   "sizes": [
    "S",
    "M",
@@ -235,7 +235,7 @@ window.SEED=[
   "sale": 1950,
   "featured": 1,
   "cat": "pants",
-  "img": "img/p5-0.svg",
+  "img": "img/s5.webp",
   "sizes": [
    "28",
    "30",
@@ -263,7 +263,7 @@ window.SEED=[
   "sale": null,
   "featured": 1,
   "cat": "pants",
-  "img": "img/p6-0.svg",
+  "img": "img/s6.webp",
   "sizes": [
    "28",
    "30",
@@ -291,7 +291,7 @@ window.SEED=[
   "sale": 2090,
   "featured": 0,
   "cat": "pants",
-  "img": "img/p7-0.svg",
+  "img": "img/s7.webp",
   "sizes": [
    "28",
    "30",
@@ -319,7 +319,7 @@ window.SEED=[
   "sale": null,
   "featured": 0,
   "cat": "pants",
-  "img": "img/p8-0.svg",
+  "img": "img/s8.webp",
   "sizes": [
    "28",
    "30",
@@ -343,7 +343,7 @@ window.SEED=[
   "sale": 850,
   "featured": 1,
   "cat": "t-shirts",
-  "img": "img/p9-0.svg",
+  "img": "img/s9.webp",
   "sizes": [
    "S",
    "M",
@@ -375,7 +375,7 @@ window.SEED=[
   "sale": null,
   "featured": 0,
   "cat": "t-shirts",
-  "img": "img/p10-0.svg",
+  "img": "img/s10.webp",
   "sizes": [
    "S",
    "M",
@@ -396,14 +396,14 @@ window.SEED=[
  },
  {
   "id": 11,
-  "name": "Piqué Polo Shirt",
-  "slug": "piqué-polo-shirt",
+  "name": "Light Blue Oxford Shirt",
+  "slug": "light-blue-oxford-shirt",
   "desc": "Classic piqué polo with a ribbed collar.",
   "price": 1290,
   "sale": 1090,
   "featured": 1,
-  "cat": "t-shirts",
-  "img": "img/p11-0.svg",
+  "cat": "shirts",
+  "img": "img/s11.webp",
   "sizes": [
    "S",
    "M",
@@ -413,25 +413,21 @@ window.SEED=[
   ],
   "colors": [
    [
-    "Forest",
-    "#1f4d3c"
-   ],
-   [
-    "White",
-    "#f8f8f6"
+    "Sky Blue",
+    "#bcd3ea"
    ]
   ]
  },
  {
   "id": 12,
-  "name": "Graphic Print Tee",
-  "slug": "graphic-print-tee",
+  "name": "Classic Red Crew Tee",
+  "slug": "classic-red-crew-tee",
   "desc": "Soft-hand screen print on combed cotton.",
   "price": 890,
   "sale": null,
   "featured": 0,
   "cat": "t-shirts",
-  "img": "img/p12-0.svg",
+  "img": "img/s12.webp",
   "sizes": [
    "S",
    "M",
@@ -441,8 +437,8 @@ window.SEED=[
   ],
   "colors": [
    [
-    "Maroon",
-    "#6e1f2a"
+    "Red",
+    "#c0272d"
    ]
   ]
  },
@@ -455,7 +451,7 @@ window.SEED=[
   "sale": 3490,
   "featured": 1,
   "cat": "shoes",
-  "img": "img/p13-0.svg",
+  "img": "img/s13.webp",
   "sizes": [
    "39",
    "40",
@@ -477,14 +473,14 @@ window.SEED=[
  },
  {
   "id": 14,
-  "name": "Suede Penny Loafer",
-  "slug": "suede-penny-loafer",
+  "name": "Double Monk Strap Shoe",
+  "slug": "double-monk-strap-shoe",
   "desc": "Soft suede loafer, hand-stitched, leather lining.",
   "price": 4290,
   "sale": null,
   "featured": 1,
   "cat": "shoes",
-  "img": "img/p14-0.svg",
+  "img": "img/s14.webp",
   "sizes": [
    "39",
    "40",
@@ -509,7 +505,7 @@ window.SEED=[
   "sale": 3990,
   "featured": 0,
   "cat": "shoes",
-  "img": "img/p15-0.svg",
+  "img": "img/s15.webp",
   "sizes": [
    "39",
    "40",
@@ -538,7 +534,7 @@ window.SEED=[
   "sale": null,
   "featured": 0,
   "cat": "shoes",
-  "img": "img/p16-0.svg",
+  "img": "img/s16.webp",
   "sizes": [
    "39",
    "40",
