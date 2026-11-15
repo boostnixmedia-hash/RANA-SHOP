@@ -32,7 +32,13 @@
   });
   const visible = () => RS.products().filter(p => p.status !== 'draft');
 
-  function home() {
+  function landing() {
+    const ps = visible();
+    const p = ps.find(x => x.landing) || ps.find(x => x.featured) || ps[0];
+    if (!p) return collection();
+    product(p.slug, true);
+  }
+  function collection() {
     const ps = visible();
     const by = s => ps.find(p => p.slug === s);
     const pick = (...s) => s.map(by).filter(Boolean);
@@ -96,7 +102,7 @@
     pin: '<svg viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-12a7 7 0 0 0-14 0c0 5.7 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>',
     tag: '<svg viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8" r="1.4"/></svg>',
   };
-  function product(slug) {
+  function product(slug, isHome) {
     const p = visible().find(x => x.slug === slug);
     if (!p) { app.innerHTML = '<div class="wrap empty"><h1>Product not found</h1><p><a class="btn" href="#/shop">Back to shop</a></p></div>'; return; }
     const c = RS.cat(p.cat);
@@ -114,20 +120,25 @@
     // close-up detail shots: real extra photos first, then zoomed crops of the main photo
     const crops = ['50% 30%', '30% 70%', '70% 55%', '50% 90%'];
     const details = imgs.length >= 4 ? imgs.slice(0, 4).map(s => [s, 'cover', 'center']) : [...imgs.slice(1).map(s => [s, 'cover', 'center']), ...crops.map(pos => [p.img, '230%', pos])].slice(0, 4);
-    app.innerHTML = `<div class="crumbbar"><div class="wrap crumbs"><a href="#/">Home</a> › <a href="#/c/${p.cat}">${c ? c.name : ''}</a> › <span>${esc(p.name)}</span></div></div>
-    <div class="wrap lp">
+    const reviews = (p.reviews || []).filter(r => r[1]);
+    const others = isHome ? visible().filter(x => x.id !== p.id) : [];
+    app.innerHTML = `${isHome ? '' : `<div class="crumbbar"><div class="wrap crumbs"><a href="#/">Home</a> › <a href="#/c/${p.cat}">${c ? c.name : ''}</a> › <span>${esc(p.name)}</span></div></div>`}
+    <div class="wrap lp ${isHome ? 'lp-home' : ''}">
       <div class="lp-l">
-        <div class="lp-gal"><div class="main-img zoom" id="zoomBox"><img id="mainImg" src="${esc(imgs[0])}" alt="${esc(p.name)}">
+        <div class="lp-gal ${imgs.length > 1 ? 'has-th' : ''}">${p.isNew || isHome ? '<span class="lp-badge">New arrival</span>' : ''}<div class="main-img zoom" id="zoomBox"><img id="mainImg" src="${esc(imgs[0])}" alt="${esc(p.name)}">
           ${imgs.length > 1 ? '<button type="button" class="arw l" data-d="-1">‹</button><button type="button" class="arw r" data-d="1">›</button>' : ''}${off ? `<span class="lp-off">-${off}%</span>` : ''}</div>
           ${imgs.length > 1 ? `<div class="lp-thumbs">${imgs.map((s, i) => `<button type="button" class="${i ? '' : 'on'}" data-i="${i}"><img src="${esc(s)}" alt=""></button>`).join('')}</div>` : ''}</div>
+        <div class="lp-trust"><div>${ICO.q}<p><b>Premium Quality</b>১০০% বাছাই করা কোয়ালিটি</p></div><div>${ICO.ok}<p><b>Soft & Comfortable</b>সারাদিন আরাম</p></div><div>${ICO.tag}<p><b>Perfect Stitching</b>টেকসই ও মজবুত</p></div></div>
         <div class="lp-block"><h3 class="lp-h">Description <small>বিবরণ</small></h3><p class="lp-desc">${esc(p.desc)}</p></div>
         <div class="lp-block lp-two">
           <div><h3 class="lp-h">Key features <small>বৈশিষ্ট্য</small></h3><ul class="lp-feats">${feats.map(f => `<li>${ICO.ok}${esc(f)}</li>`).join('')}</ul></div>
           <div><h3 class="lp-h">${p.cat === 'shoes' ? 'Material' : 'Fabric'} details</h3><ul class="lp-fab">${fabric.map(r => `<li>${ICO.tag}${r[0] ? `<span>${esc(r[0])}:</span> ` : ''}<b>${esc(r[1])}</b></li>`).join('')}</ul></div>
         </div>
+        ${p.colors && p.colors.length ? `<div class="lp-block"><h3 class="lp-h">Available colours <small>যে কালারগুলো আছে</small></h3><div class="lp-avail">${p.colors.map(x => `<div><img src="${esc(p.img)}" alt=""><span><i style="background:${esc(x[1])}"></i>${esc(x[0])}</span></div>`).join('')}</div></div>` : ''}
         <div class="lp-block"><h3 class="lp-h">Why you will love it <small>কাছ থেকে দেখুন</small></h3>
           <div class="lp-why">${details.map(d => `<div style="background-image:url('${esc(d[0])}');background-size:${d[1]};background-position:${d[2]}"></div>`).join('')}</div></div>
         ${chart ? `<div class="lp-block" id="sizeChartBox"><h3 class="lp-h">Size chart <small>সাইজ চার্ট</small></h3><table class="chart lp-chart">${chart.map((r, i) => `<tr>${r.map(v => i ? `<td>${v}</td>` : `<th>${v}</th>`).join('')}</tr>`).join('')}</table></div>` : ''}
+        ${reviews.length ? `<div class="lp-block"><h3 class="lp-h">Customers say <small>কাস্টমার রিভিউ</small></h3><div class="lp-revs">${reviews.map(r => `<div><span class="st">★★★★★</span><p>${esc(r[1])}</p><b>– ${esc(r[0] || 'Customer')}</b></div>`).join('')}</div></div>` : ''}
         <div class="lp-block"><h3 class="lp-h">Delivery information <small>ডেলিভারি তথ্য</small></h3>
           <div class="lp-deliv"><div>${ICO.bike}<p><b>ঢাকার ভিতরে</b>ডেলিভারি চার্জ: ৳70<br>সময়: ১-২ দিন</p></div><div>${ICO.van}<p><b>ঢাকার বাইরে</b>ডেলিভারি চার্জ: ৳130<br>সময়: ২-৪ দিন</p></div></div>
           <div class="lp-cod">${ICO.cash} সারা বাংলাদেশে ক্যাশ অন ডেলিভারি, পণ্য হাতে পেয়ে টাকা দিন</div></div>
@@ -163,7 +174,8 @@
       <div>${ICO.cash}<p><b>ক্যাশ অন ডেলিভারি</b>হাতে পেয়ে টাকা দিন</p></div>
       <div>${ICO.ret}<p><b>সহজ এক্সচেঞ্জ</b>৭ দিনের মধ্যে সাইজ বদল</p></div>
       <div>${ICO.van}<p><b>দ্রুত ডেলিভারি</b>সারা বাংলাদেশে</p></div></div></section>
-    ${related.length ? `<section class="sec"><div class="wrap"><div class="sec-head"><h2>You may also like</h2><a href="#/c/${p.cat}">View all</a></div><div class="grid">${related.map(card).join('')}</div></div></section>` : ''}
+    ${isHome && others.length ? `<section class="sec lp-more"><div class="wrap"><div class="sec-head"><h2>আরো প্রোডাক্ট <small>More products</small></h2><a href="#/collection">সব কালেকশন দেখুন</a></div><div class="grid">${others.map(card).join('')}</div></div></section>` : ''}
+    ${!isHome && related.length ? `<section class="sec"><div class="wrap"><div class="sec-head"><h2>You may also like</h2><a href="#/c/${p.cat}">View all</a></div><div class="grid">${related.map(card).join('')}</div></div></section>` : ''}
     <div class="stickybar" id="sticky"><div class="wrap sb-in"><img src="${esc(p.img)}" alt=""><div class="sb-t"><b>${esc(p.name)}</b><span>${money(price)}</span></div><button class="btn lp-gold" id="sbGo">অর্ডার করুন</button></div></div>`;
     const zb = document.getElementById('zoomBox'), zi = document.getElementById('mainImg');
     zb.onmousemove = e => { if (e.target.closest('.arw')) return; const r = zb.getBoundingClientRect(); zi.style.transformOrigin = ((e.clientX - r.left) / r.width * 100) + '% ' + ((e.clientY - r.top) / r.height * 100) + '%'; zb.classList.add('on'); };
@@ -284,7 +296,7 @@
     const h = location.hash.replace(/^#\/?/, '').split('/');
     document.querySelector('.nav').classList.remove('open');
     document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === location.hash));
-    ({ '': home, shop: () => listing(), c: () => listing(h[1]), p: () => product(h[1]), cart, checkout, done: () => done(h[1]) }[h[0]] || home)();
+    ({ '': landing, collection, shop: () => listing(), c: () => listing(h[1]), p: () => product(h[1]), cart, checkout, done: () => done(h[1]) }[h[0]] || landing)();
     window.scrollTo(0, 0); updateCount();
   }
   window.addEventListener('hashchange', route); route();

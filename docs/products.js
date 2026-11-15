@@ -47,7 +47,7 @@ window.SEED=[
    ]
   ]
  },
- {
+ {"landing": 1, 
   "id": 21,
   "name": "Zip-Front Denim Shirt",
   "slug": "zip-front-denim-shirt",

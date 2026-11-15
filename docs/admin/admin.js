@@ -106,7 +106,7 @@
   function products() {
     const ps = RS.products();
     shell('products', 'Products', `<div class="box" style="overflow-x:auto"><table class="tbl"><tr><th></th><th>Name</th><th class="hide-m">Category</th><th>Price</th><th class="hide-m">Status</th><th></th></tr>
-      ${ps.map(p => `<tr><td><img src="${src(p.img)}" alt=""></td><td><a href="#/edit/${p.id}"><b style="font-weight:500">${esc(p.name)}</b></a>${p.featured ? ' <span class="pill">★ Featured</span>' : ''}</td>
+      ${ps.map(p => `<tr><td><img src="${src(p.img)}" alt=""></td><td><a href="#/edit/${p.id}"><b style="font-weight:500">${esc(p.name)}</b></a>${p.featured ? ' <span class="pill">★ Featured</span>' : ''}${p.landing ? ' <span class="pill">Homepage</span>' : ''}</td>
       <td class="hide-m">${esc((RS.cat(p.cat) || {}).name || '')}</td><td>${p.sale ? `${money(p.sale)} <s style="color:var(--muted)">${money(p.price)}</s>` : money(p.price)}</td>
       <td class="hide-m"><span class="pill ${p.status === 'draft' ? '' : 'g'}">${p.status === 'draft' ? 'Draft' : 'Active'}</span></td>
       <td><div class="acts"><a class="btn ghost sm" href="#/edit/${p.id}">Edit</a><button class="btn danger sm" data-del="${p.id}">Delete</button></div></td></tr>`).join('')}</table></div>`,
@@ -125,7 +125,8 @@
       <div class="box"><label>Product name *<input name="name" required value="${esc(d.name)}" placeholder="e.g. Oversized Cotton T-Shirt"></label>
         <label>Description<textarea name="desc" rows="3">${esc(d.desc)}</textarea></label>
         <label>Key features <small style="color:var(--muted)">(one per line, Bangla or English. Leave empty to use the default list)</small><textarea name="features" rows="4" placeholder="প্রিমিয়াম কোয়ালিটি ফ্যাব্রিক&#10;নরম ও আরামদায়ক">${esc((d.features || []).join('\n'))}</textarea></label>
-        <label>Fabric details <small style="color:var(--muted)">(one per line as Name: value, e.g. Fabric: 100% Cotton)</small><textarea name="fabric" rows="4" placeholder="Fabric: 100% Cotton&#10;GSM: 180-220">${esc((d.fabric || []).map(r => r.join(': ')).join('\n'))}</textarea></label></div>
+        <label>Fabric details <small style="color:var(--muted)">(one per line as Name: value, e.g. Fabric: 100% Cotton)</small><textarea name="fabric" rows="4" placeholder="Fabric: 100% Cotton&#10;GSM: 180-220">${esc((d.fabric || []).map(r => r.join(': ')).join('\n'))}</textarea></label>
+        <label>Customer reviews <small style="color:var(--muted)">(only real reviews, one per line as Name | review text. Empty = no review section)</small><textarea name="reviews" rows="3" placeholder="Rafiq, Dhaka | কাপড়ের কোয়ালিটি অসাধারণ!">${esc((d.reviews || []).map(r => r.join(' | ')).join('\n'))}</textarea></label></div>
       <div class="box"><h2>Photo</h2><label class="upl">Click to upload a photo (JPG / PNG)<input type="file" id="file" accept="image/*"></label><img id="prev" class="prev" ${img ? `src="${src(img)}"` : 'style="display:none"'} alt=""></div>
       <div class="box"><h2>Sizes & colours</h2>
         <label>Sizes (separate with commas)<input name="sizes" id="sizes" value="${esc(d.sizes.join(', '))}" placeholder="S, M, L, XL"></label>
@@ -134,6 +135,7 @@
         <div style="font-size:.85rem;margin-bottom:8px">Colours</div><div id="cols"></div><button type="button" class="btn ghost sm" id="addCol">+ Add colour</button></div></div>
       <div><div class="box"><label>Status<select name="status"><option value="active">Active (visible on website)</option><option value="draft" ${d.status === 'draft' ? 'selected' : ''}>Draft (hidden)</option></select></label>
         <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="featured" style="width:auto;margin:0" ${d.featured ? 'checked' : ''}> Featured product</label>
+        <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="landing" style="width:auto;margin:0" ${d.landing ? 'checked' : ''}> Show on homepage (landing page)</label>
         <button class="btn block">${p ? 'Save changes' : 'Add product'}</button>${p ? `<a class="btn ghost block" style="margin-top:8px" href="../#/p/${esc(p.slug)}" target="_blank">View on website</a>` : ''}</div>
       <div class="box"><h2>Price</h2><label>Regular price (৳) *<input name="price" type="number" min="1" required value="${esc(d.price)}"></label>
         <label>Sale price (৳) <small style="color:var(--muted)">(optional)</small><input name="sale" type="number" min="0" value="${esc(d.sale || '')}"></label></div>
@@ -162,9 +164,12 @@
       const list = RS.products(); const name = f.get('name').trim();
       let slug = RS.slugify(name), i = 2; while (list.some(x => x.slug === slug && (!p || x.id !== p.id))) slug = RS.slugify(name) + '-' + i++;
       const data = { name, slug, desc: f.get('desc').trim(), price, sale, cat: f.get('cat'), img,
+        landing: f.get('landing') ? 1 : 0,
+        reviews: f.get('reviews').split('\n').map(x => x.trim()).filter(Boolean).map(x => { const k = x.indexOf('|'); return k >= 0 ? [x.slice(0, k).trim(), x.slice(k + 1).trim()] : ['', x]; }),
         features: f.get('features').split('\n').map(x => x.trim()).filter(Boolean),
         fabric: f.get('fabric').split('\n').map(x => x.trim()).filter(Boolean).map(x => { const k = x.indexOf(':'); return k > 0 ? [x.slice(0, k).trim(), x.slice(k + 1).trim()] : ['', x]; }), status: f.get('status'), featured: f.get('featured') ? 1 : 0,
         sizes: f.get('sizes').split(',').map(s => s.trim()).filter(Boolean), soldOut, colors: [...cols.children].map(r => [r.querySelector('.cn').value.trim(), r.querySelector('.ch').value]).filter(c => c[0]) };
+      if (data.landing) list.forEach(x => { x.landing = 0; });
       if (p) Object.assign(list.find(x => x.id === p.id), data);
       else list.unshift({ id: Math.max(0, ...list.map(x => x.id)) + 1, isNew: true, ...data });
       if (RS.saveProducts(list)) { toast(p ? 'Product saved' : 'Product added'); location.hash = '#/products'; }
