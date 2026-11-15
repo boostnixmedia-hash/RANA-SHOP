@@ -593,3 +593,18 @@ a.on,.filters a.on{border-color:var(--rd)}
 .kl-btn.big{animation:none!important;box-shadow:0 8px 18px rgba(201,47,27,.3);transition:transform .15s}
 .kl-brand>span,.kl-brand b{animation:klIn .8s cubic-bezier(.2,1.5,.4,1) both!important;animation-delay:calc(var(--i)*.08s)!important;will-change:auto}
 .kl-tiles .hand{animation:none!important}
+/* ===== light animations v3: GPU-only (transform/opacity), no shadow/paint loops ===== */
+.kl-brand>span,.kl-brand b{animation:klIn .8s cubic-bezier(.2,1.5,.4,1) both,klWave3 2.8s ease-in-out infinite!important;animation-delay:calc(var(--i)*.08s),calc(1s + var(--i)*.14s)!important;will-change:transform}
+@keyframes klWave3{0%,40%,100%{transform:translateY(0)}20%{transform:translateY(-12px)}}
+/* shine sweep across ORDER NOW (moves a small gradient, no shadow change) */
+.kl-btn{position:relative;overflow:hidden}
+.kl-btn.big::after,.kl-btn.sm::after,.kl-btn.block::after{content:"";display:block!important;position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:translateX(-150%) skewX(-20deg);animation:klShine 2.6s ease-in-out infinite!important;pointer-events:none;border:0;border-radius:0;opacity:1;inset:auto}
+.kl-btn.big::after{top:0;bottom:0}
+@keyframes klShine{0%,55%{transform:translateX(-150%) skewX(-20deg)}100%{transform:translateX(320%) skewX(-20deg)}}
+/* scroll reveal (runs once per section) */
+.rv-in{opacity:0;transform:translateY(34px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.9,.3,1)}
+.rv-in.seen{opacity:1;transform:none}
+.kl-pc.rv-in:nth-child(2n){transition-delay:.08s}
+/* hover lift */
+.kl-pc{transition:transform .25s,border-color .2s,box-shadow .2s}.kl-pc:hover{transform:translateY(-4px)}
+@media(prefers-reduced-motion:reduce){.rv-in{opacity:1;transform:none}}

@@ -86,6 +86,10 @@
       </form></section>
     </div>
     <div class="kl-lb" id="klLb" hidden><img alt=""><button type="button" aria-label="Close">×</button></div>`;
+    // reveal sections and product cards as they scroll into view (one time)
+    const rvEls = app.querySelectorAll('.kl-sec, .kl-pc, .kl-det div, .kl-timer div');
+    if ('IntersectionObserver' in window) { const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('seen'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
+      rvEls.forEach(el => { el.classList.add('rv-in'); io.observe(el); }); }
     // zoom lightbox
     const lb = document.getElementById('klLb');
     app.querySelectorAll('[data-zoom]').forEach(el => el.onclick = () => { lb.querySelector('img').src = el.dataset.zoom; lb.hidden = false; });
