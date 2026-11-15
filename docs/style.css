@@ -545,3 +545,21 @@ a.on,.filters a.on{border-color:var(--rd)}
 .h-express{background:radial-gradient(circle at 75% 50%,#5a1a10,#0d0d0d 60%)}
 .btn:disabled{background:#eee;border-color:#ddd;color:#999}
 .h-banner.dark,.h-banner.black .hb-txt{background:#161616}
+/* ===== performance: light animations (transform/opacity only, few loops) ===== */
+.kl-brand>*,.kl-brand b{animation:klIn .8s cubic-bezier(.2,1.5,.4,1) both;animation-delay:calc(var(--i)*.08s);will-change:transform}
+.kl-brand b{animation:klIn .8s cubic-bezier(.2,1.5,.4,1) both,klFlip2 5s ease-in-out infinite;animation-delay:calc(var(--i)*.08s),calc(1.5s + var(--i)*.3s);box-shadow:none}
+@keyframes klIn{from{opacity:0;transform:translateY(-120px) rotate(-30deg) scale(.4)}}
+@keyframes klFlip2{0%,80%,100%{transform:rotateY(0)}90%{transform:rotateY(180deg)}}
+.kl-brand>span{animation:klIn .8s cubic-bezier(.2,1.5,.4,1) both,klHop 5s ease-in-out infinite;animation-delay:calc(var(--i)*.08s),calc(1.4s + var(--i)*.15s)}
+@keyframes klHop{0%,12%,100%{transform:translateY(0)}6%{transform:translateY(-14px)}}
+.kl-brand span:nth-child(odd){transform:none;rotate:-6deg}.kl-brand span:nth-child(even){transform:none;rotate:5deg;translate:0 8px}
+.kl-tiles figure{animation:klTile .8s ease-out both;will-change:auto}
+.kl-tiles .t0{animation-delay:.6s}.kl-tiles .t1{animation-delay:.7s}.kl-tiles .t2{animation-delay:.8s}.kl-tiles .t3{animation-delay:.9s}
+@keyframes klTile{from{opacity:0;transform:translateY(40px)}}
+.kl-tiles img{box-shadow:0 12px 24px rgba(0,0,0,.2)}
+.kl-btn.big{position:relative;animation:none}
+.kl-btn.big::after{content:"";position:absolute;inset:0;border-radius:40px;border:2px solid var(--rd);animation:klRing 1.8s ease-out infinite;pointer-events:none}
+@keyframes klRing{from{transform:scale(1);opacity:.8}to{transform:scale(1.25,1.5);opacity:0}}
+.kl-rings{box-shadow:none;background:radial-gradient(circle,rgba(255,255,255,.35) 0 45%,rgba(0,0,0,.03) 46% 60%,transparent 61%)}
+.h-hero-txt{animation:none}
+@media(prefers-reduced-motion:reduce){.kl-brand>*,.kl-tiles figure,.kl-btn.big::after{animation:none!important}}

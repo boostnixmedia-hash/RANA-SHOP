@@ -53,7 +53,7 @@
       <h1 class="kl-brand"><span style="--i:0">R</span><span style="--i:1">A</span><b style="--i:2">N</b><span style="--i:3">A</span><span style="--i:4">S</span><span style="--i:5">H</span><b style="--i:6">O</b><span style="--i:7">P</span></h1>
       <div class="kl-sub"><span>CREATIVE LOOK</span><span>NEW SEASON '27</span></div>
       <p class="kl-hint">জুম করতে ছবিতে ক্লিক করুন</p>
-      <div class="kl-tiles">${tiles.map((p, i) => `<figure class="t${i}"><img src="${esc(p.img)}" alt="${esc(p.name)}" data-zoom="${esc(p.img)}"><figcaption>${esc((RS.cat(p.cat) || {}).name || '').toUpperCase()}</figcaption></figure>`).join('')}<div class="kl-rings"></div></div>
+      <div class="kl-tiles">${tiles.map((p, i) => `<figure class="t${i}"><img src="${esc(p.img)}" alt="${esc(p.name)} - Rana Shop" ${i > 1 ? 'loading="lazy"' : 'fetchpriority="high"'} decoding="async" width="300" height="400" data-zoom="${esc(p.img)}"><figcaption>${esc((RS.cat(p.cat) || {}).name || '').toUpperCase()}</figcaption></figure>`).join('')}<div class="kl-rings"></div></div>
       <a class="kl-btn big" href="#order" data-go>ORDER NOW</a>
     </section>
     <section class="kl-sec kl-q"><h2>গুণমান</h2><ul>${quality.map(q => `<li>${q}</li>`).join('')}</ul><a class="kl-btn sm" href="#order" data-go>অর্ডার করুন</a></section>
@@ -372,12 +372,31 @@
       <p style="color:var(--muted);margin-bottom:28px">For any question, message us on WhatsApp: <b>${esc(RS.SHOP.whatsapp)}</b></p>
       <a class="btn" target="_blank" href="https://wa.me/${wa}?text=${encodeURIComponent('Hi, my order number is ' + no)}">WhatsApp us</a> <a class="btn ghost" href="#/shop">Continue shopping</a></div>`;
   }
+  // per-page title, description and Product schema for search engines / link previews
+  const BASE = 'https://boostnixmedia-hash.github.io/RANA-SHOP/';
+  function seo(h) {
+    const set = (sel, attr, v) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, v); };
+    let title = 'Rana Shop | Premium Menswear in Bangladesh: Shirts, Pants, T-Shirts, Shoes', desc = '', img = BASE + 'img/og.jpg', ld = null;
+    if (h[0] === 'p') { const p = visible().find(x => x.slug === h[1]); if (p) { const c = RS.cat(p.cat);
+      title = `${p.name} | ${c ? c.name : ''} | Rana Shop`; desc = `${p.name}: ${p.desc} Price ${money(now(p))}. Cash on Delivery all over Bangladesh.`; if (!/^data:/.test(p.img)) img = BASE + p.img;
+      ld = { '@context': 'https://schema.org', '@type': 'Product', name: p.name, description: p.desc, image: img, sku: 'RS-' + p.id, brand: { '@type': 'Brand', name: 'Rana Shop' }, category: c ? c.name : '',
+        offers: { '@type': 'Offer', priceCurrency: 'BDT', price: now(p), availability: (p.sizes || []).some(s => !(p.soldOut || []).includes(s)) || !(p.sizes || []).length ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock', url: BASE + '#/p/' + p.slug, seller: { '@type': 'Organization', name: 'Rana Shop' } } }; } }
+    else if (h[0] === 'c') { const c = RS.cat(h[1]); if (c) { title = `Men's ${c.name} in Bangladesh | Rana Shop`; desc = `Shop men's ${c.name.toLowerCase()} at Rana Shop. Premium quality, Cash on Delivery all over Bangladesh.`; } }
+    else if (h[0] === 'shop' || h[0] === 'collection') { title = 'All Products | Rana Shop'; }
+    else if (h[0] === 'cart' || h[0] === 'checkout' || h[0] === 'done') { title = (h[0] === 'cart' ? 'Cart' : h[0] === 'checkout' ? 'Checkout' : 'Order placed') + ' | Rana Shop'; }
+    document.title = title;
+    if (desc) { set('meta[name="description"]', 'content', desc); set('meta[property="og:description"]', 'content', desc); }
+    set('meta[property="og:title"]', 'content', title); set('meta[property="og:image"]', 'content', img); set('meta[property="og:url"]', 'content', BASE + location.hash);
+    set('link[rel="canonical"]', 'href', BASE + (h[0] === 'p' || h[0] === 'c' ? location.hash : ''));
+    let tag = document.getElementById('ldPage'); if (tag) tag.remove();
+    if (ld) { tag = document.createElement('script'); tag.type = 'application/ld+json'; tag.id = 'ldPage'; tag.textContent = JSON.stringify(ld); document.head.appendChild(tag); }
+  }
   function route() {
     const h = location.hash.replace(/^#\/?/, '').split('/');
     document.querySelector('.nav').classList.remove('open');
     document.querySelectorAll('.nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === location.hash));
     ({ '': landing, collection, shop: () => listing(), c: () => listing(h[1]), p: () => product(h[1]), cart, checkout, done: () => done(h[1]) }[h[0]] || landing)();
-    window.scrollTo(0, 0); updateCount();
+    seo(h); window.scrollTo(0, 0); updateCount();
   }
   window.addEventListener('hashchange', route); route();
 })();

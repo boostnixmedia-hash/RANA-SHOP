@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /RANA-SHOP/admin/
+Disallow: /admin/
+
+Sitemap: https://boostnixmedia-hash.github.io/RANA-SHOP/sitemap.xml
