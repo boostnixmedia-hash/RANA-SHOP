@@ -14,7 +14,7 @@ window.RS = (function () {
     const saved = ls.get('rs_products', null);
     if (!saved) return window.SEED.map(p => ({ ...p }));
     // older saved lists pointed at drawings that were replaced by photos
-    return saved.filter(p => p.slug !== 'iridescent-high-top-sneaker').map(p => { const s = window.SEED.find(x => x.id === p.id); return s && /^img\/p\d+-0\.svg$/.test(p.img) ? { ...p, img: s.img, name: s.name, slug: s.slug } : p; });
+    return saved.filter(p => p.slug !== 'iridescent-high-top-sneaker' && !(/^img\/(s\d+\.webp|p\d+-0\.svg)$/.test(p.img) && p.img !== 'img/s13.webp' && !window.SEED.some(x => x.id === p.id))).map(p => { const s = window.SEED.find(x => x.id === p.id); return s && /^img\/(p\d+-0\.svg|s\d+\.webp)$/.test(p.img) && p.img !== s.img ? { ...p, img: s.img, name: s.name, slug: s.slug } : p; });
   }
   function saveProducts(list) { return ls.set('rs_products', list); }
   function slugify(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'item'; }

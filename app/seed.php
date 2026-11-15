@@ -86,6 +86,7 @@ function seed_all(): void {
     $n = 0;
     foreach ($products as [$name, $cat, $type, $price, $sale, $cost, $sizes, $colors, $desc, $inCols, $featured]) {
         $n++;
+        if (!in_array($name, ['Light Blue Oxford Shirt', 'Leather Low-Top Sneaker'], true)) continue; // only the owner's own photos
         $slug = slugify($name);
         $pid = insert('products', ['name' => $name, 'slug' => $slug, 'sku' => 'RS' . str_pad((string)$n, 4, '0', STR_PAD_LEFT), 'short_desc' => $desc,
             'description' => '<p>' . e($desc) . '</p><ul><li>Premium quality fabric</li><li>Colour-fast, pre-washed</li><li>Machine wash cold, dry in shade</li></ul>',
@@ -94,7 +95,7 @@ function seed_all(): void {
         $vs = 0;
         foreach ($colors as $ci => [$cname, $hex]) {
             $isCheck = str_contains($name, 'Check');
-            $img = is_file(__DIR__ . "/seed-photos/s$n.webp") ? demo_photo("s$n") : demo_file("p$n-$ci", demo_art($type, $hex, '#f1ece4', $isCheck));
+            $img = $name === 'Light Blue Oxford Shirt' ? demo_photo('n2') : (is_file(__DIR__ . "/seed-photos/s$n.webp") ? demo_photo("s$n") : demo_file("p$n-$ci", demo_art($type, $hex, '#f1ece4', $isCheck)));
             $imgId = insert('product_images', ['product_id' => $pid, 'path' => $img, 'alt' => "$name - $cname", 'sort' => $ci, 'is_featured' => $ci === 0 ? 1 : 0]);
             foreach ($sizes as $s) {
                 insert('variants', ['product_id' => $pid, 'color' => $cname, 'color_hex' => $hex, 'size' => $s, 'sku' => 'RS' . str_pad((string)$n, 4, '0', STR_PAD_LEFT) . '-' . strtoupper(substr(preg_replace('/\s/', '', $cname), 0, 3)) . '-' . $s,
@@ -106,6 +107,10 @@ function seed_all(): void {
 
     // ---- Real photo products (owner's own photos), newest and featured
     $real = [
+        ['Baggy Black Wash Jeans', 'pants', 'n5', 2690, 2390, 1300, $waist, ['Washed Black', '#2b2d31'], 'Wide baggy fit in washed black denim with seam detail down the leg.', ['new-season-2027']],
+        ['Charcoal Wide-Leg Trouser', 'pants', 'n4', 2190, null, 1000, $waist, ['Charcoal', '#3c3d40'], 'Relaxed wide-leg trouser with drawstring waist and pressed front crease.', ['new-season-2027']],
+        ['Black Zip Polo', 't-shirts', 'n3', 1490, 1290, 600, $tops, ['Black', '#161616'], 'Cotton pique polo with a hidden half zip and clean front seam.', ['premium-essentials']],
+        ['Zip-Front Denim Shirt', 'shirts', 'n1', 2290, 1890, 1100, $tops, ['Charcoal', '#45464c'], 'Soft chambray-look shirt with a full metal zip and contrast stitching.', ['new-season-2027']],
         ['Embroidered Cuff Panjabi', 'shirts', 'panjabi', 3490, null, 1800, ['M', 'L', 'XL', 'XXL'], ['Silver Grey', '#a9a9b3'], 'Fine-weave panjabi with hand-embroidered cuffs. Made for Eid and weddings.', ['limited-edition']],
         ['Butterfly Graphic Oversized Tee', 't-shirts', 'tee', 1290, 990, 450, $tops, ['Stone', '#a59d94'], '240 GSM oversized tee with a soft-focus butterfly print.', ['new-season-2027']],
         ['Wide-Leg Drawstring Pant', 'pants', 'pant', 2190, null, 1000, $waist, ['Coffee', '#7a5a3a'], 'Relaxed wide-leg pant in soft twill with an elastic drawstring waist.', ['new-season-2027']],
