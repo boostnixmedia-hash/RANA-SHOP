@@ -608,3 +608,8 @@ a.on,.filters a.on{border-color:var(--rd)}
 /* hover lift */
 .kl-pc{transition:transform .25s,border-color .2s,box-shadow .2s}.kl-pc:hover{transform:translateY(-4px)}
 @media(prefers-reduced-motion:reduce){.rv-in{opacity:1;transform:none}}
+.kl-pc{cursor:pointer;position:relative}
+.kl-pc .ok{display:none;position:absolute;right:12px;top:12px;z-index:2;background:var(--rd);color:#fff;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:20px;font-family:'Anek Bangla',sans-serif}
+.kl-pc.on .ok{display:block}
+.kl-how{margin:-4px 0 14px;color:#555;font-size:.95rem}
+.kl-pc .ok{top:auto;bottom:auto;right:auto;left:50%;transform:translateX(-50%);margin-top:-30px;position:relative;display:none;width:max-content}.kl-pc.on .ok{display:block}

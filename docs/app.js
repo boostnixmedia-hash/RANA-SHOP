@@ -64,16 +64,15 @@
     ${charts.length ? `<section class="kl-sec kl-chart"><h2 class="c">সাইজ চার্ট</h2><p class="c muted">আপনার সঠিক সাইজ নির্বাচন করুন · মাপ ইঞ্চিতে দেওয়া হয়েছে</p>
       <div class="kl-tabs">${charts.map((c, i) => `<button type="button" class="${i ? '' : 'on'}" data-tab="${c.slug}">${c.name}</button>`).join('')}</div>
       ${charts.map((c, i) => `<table class="kl-tbl" data-t="${c.slug}" ${i ? 'hidden' : ''}>${SIZE_CHART[c.slug].map((r, k) => `<tr>${r.map(v => k ? `<td>${v}</td>` : `<th>${v}</th>`).join('')}</tr>`).join('')}</table>`).join('')}</section>` : ''}
-    <section class="kl-sec" id="order"><h2>অর্ডার করতে নিচের ফর্মটি পূরণ করুন, এবং সাইজ সিলেক্ট করুন</h2>
+    <section class="kl-sec" id="order"><h2>অর্ডার করতে নিচের ফর্মটি পূরণ করুন, এবং সাইজ সিলেক্ট করুন</h2><p class="kl-how">প্রোডাক্টের ছবিতে বা সাইজে ক্লিক করলেই অর্ডারে যোগ হবে। একসাথে একাধিক প্রোডাক্টও নিতে পারবেন।</p>
       <form class="kl-form" id="klForm" novalidate>
         <div class="kl-prods">${ps.map(p => { const so = p.soldOut || []; return `<div class="kl-pc" data-id="${p.id}"><div class="im"><img src="${esc(p.img)}" alt="" loading="lazy">${p.sale && p.sale < p.price ? `<em>-${Math.round((1 - p.sale / p.price) * 100)}%</em>` : ''}</div>
-          <b>${esc(p.name)}</b><div class="pr">${p.sale && p.sale < p.price ? `<s>${money(p.price)}</s>` : ''}<span>${money(now(p))}</span></div><small>সাইজ নির্বাচন করুন</small>
+          <span class="ok">✓ সিলেক্ট হয়েছে</span><b>${esc(p.name)}</b><div class="pr">${p.sale && p.sale < p.price ? `<s>${money(p.price)}</s>` : ''}<span>${money(now(p))}</span></div><small>সাইজ নির্বাচন করুন</small>
           <div class="sz">${(p.sizes && p.sizes.length ? p.sizes : ['Free']).map(s => so.includes(s) ? `<button type="button" disabled>${esc(s)}</button>` : `<button type="button" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div></div>`; }).join('')}</div>
         <div class="kl-bill">
           <div class="kl-in"><label>আপনার নাম <i>*</i><input name="name" placeholder="এখানে নাম লিখুন"></label>
             <label>সম্পূর্ণ ঠিকানা <i>*</i><input name="address" placeholder="বাসা, রোড, এলাকা, জেলা"></label>
             <label>মোবাইল নাম্বার <i>*</i><input name="phone" inputmode="tel" placeholder="01XXXXXXXXX"></label>
-            <label>Gmail <i>*</i><input name="email" type="email" placeholder="অর্ডার নম্বর এই Gmail-এ পাঠানো হবে"></label>
             <label>নোট (ঐচ্ছিক)<input name="note" placeholder="কিছু বলার থাকলে লিখুন"></label></div>
           <div class="kl-sum"><h3>YOUR ORDER</h3><div id="klLines"></div>
             <div class="row"><span>Subtotal</span><span id="klSub">৳0</span></div>
@@ -110,15 +109,20 @@
       app.querySelectorAll('#klLines [data-k]').forEach(b => b.onclick = () => { const k = b.dataset.k; pick[k] = (pick[k] || 0) + +b.dataset.d; if (pick[k] <= 0) delete pick[k]; draw(); });
       return { ls, sub, ship, total: sub + ship };
     };
+    // tapping the photo or name picks the first available size (tap again to remove)
+    app.querySelectorAll('.kl-pc').forEach(c => c.onclick = e => { if (e.target.closest('.sz')) return;
+      const keys = Object.keys(pick).filter(k => k.startsWith(c.dataset.id + '|'));
+      if (keys.length) keys.forEach(k => delete pick[k]); else { const b = c.querySelector('.sz button[data-s]'); if (b) pick[c.dataset.id + '|' + b.dataset.s] = 1; else toast('এই প্রোডাক্টের স্টক শেষ'); }
+      draw(); if (!keys.length) toast('অর্ডারে যোগ হয়েছে, চাইলে সাইজ বদলান'); });
     app.querySelectorAll('.kl-pc .sz button[data-s]').forEach(b => b.onclick = () => { const k = b.closest('.kl-pc').dataset.id + '|' + b.dataset.s; if (pick[k]) delete pick[k]; else pick[k] = 1; draw(); });
     form.querySelectorAll('input[name=zone]').forEach(r => r.onchange = draw);
     draw();
     form.onsubmit = e => {
       e.preventDefault(); const f = new FormData(form); const v = k => String(f.get(k) || '').trim(); const t = draw(); const err = document.getElementById('klErr');
-      const bad = !t.ls.length ? ['', 'অন্তত একটা প্রোডাক্টের সাইজ সিলেক্ট করুন'] : !v('name') ? ['name', 'আপনার নাম লিখুন'] : !v('address') ? ['address', 'সম্পূর্ণ ঠিকানা লিখুন'] : !/^(\+?88)?01[3-9]\d{8}$/.test(v('phone').replace(/[\s-]/g, '')) ? ['phone', 'সঠিক মোবাইল নম্বর লিখুন (01XXXXXXXXX)'] : !/^\S+@\S+\.\S+$/.test(v('email')) ? ['email', 'সঠিক Gmail লিখুন'] : null;
+      const bad = !t.ls.length ? ['', 'অন্তত একটা প্রোডাক্টের সাইজ সিলেক্ট করুন'] : !v('name') ? ['name', 'আপনার নাম লিখুন'] : !v('address') ? ['address', 'সম্পূর্ণ ঠিকানা লিখুন'] : !/^(\+?88)?01[3-9]\d{8}$/.test(v('phone').replace(/[\s-]/g, '')) ? ['phone', 'সঠিক মোবাইল নম্বর লিখুন (01XXXXXXXXX)'] : null;
       if (bad) { err.textContent = bad[1]; if (bad[0]) form.querySelector(`[name=${bad[0]}]`).focus(); else app.querySelector('.kl-prods').scrollIntoView({ behavior: 'smooth' }); return; }
       err.textContent = ''; const orders = RS.orders(); const no = 'RS' + (1001 + orders.length);
-      orders.unshift({ no, date: new Date().toISOString(), name: v('name'), email: v('email').toLowerCase(), phone: v('phone'), address: v('address'), zone: zone(), note: v('note'), pay: 'Cash on Delivery', status: 'Pending',
+      orders.unshift({ no, date: new Date().toISOString(), name: v('name'), email: '', phone: v('phone'), address: v('address'), zone: zone(), note: v('note'), pay: 'Cash on Delivery', status: 'Pending',
         items: t.ls.map(l => ({ name: l.p.name, img: l.p.img, color: ((l.p.colors || [])[0] || [''])[0], size: l.size === 'Free' ? '' : l.size, qty: l.q, price: now(l.p) })), sub: t.sub, ship: t.ship, total: t.total });
       RS.saveOrders(orders); sendOrderMail(orders[0]); location.hash = '#/done/' + no;
     };
@@ -243,7 +247,6 @@
           <div class="lp-step"><h4>৫. আপনার তথ্য</h4>
             <label class="lp-in">${ICO.user}<input name="name" required placeholder="আপনার নাম লিখুন"></label>
             <label class="lp-in">${ICO.phone}<input name="phone" required inputmode="tel" placeholder="মোবাইল নম্বর লিখুন (01XXXXXXXXX)"></label>
-            <label class="lp-in">${ICO.mail}<input name="email" type="email" required placeholder="আপনার Gmail লিখুন (অর্ডার নম্বর পাঠানো হবে)"></label>
             <label class="lp-in ta">${ICO.pin}<textarea name="address" rows="2" required placeholder="সম্পূর্ণ ঠিকানা লিখুন (বাসা, রোড, এলাকা, জেলা)"></textarea></label></div>
           <div class="lp-step"><h4>৬. অতিরিক্ত নোট <small>(ঐচ্ছিক)</small></h4><textarea class="lp-note" name="note" rows="2" placeholder="কোনো কিছু বলার থাকলে এখানে লিখুন..."></textarea></div>
           <div class="lp-sum" id="lpSum"></div>
@@ -293,11 +296,11 @@
     form.onsubmit = e => {
       e.preventDefault(); if (noStock) return;
       const f = new FormData(form); const v = k => String(f.get(k) || '').trim();
-      const bad = !v('name') ? 'আপনার নাম লিখুন' : !/^(\+?88)?01[3-9]\d{8}$/.test(v('phone').replace(/[\s-]/g, '')) ? 'সঠিক মোবাইল নম্বর লিখুন (01XXXXXXXXX)' : !/^\S+@\S+\.\S+$/.test(v('email')) ? 'সঠিক Gmail লিখুন' : !v('address') ? 'সম্পূর্ণ ঠিকানা লিখুন' : '';
-      if (bad) { err.textContent = bad; const el = form.querySelector(`[name="${bad.includes('নাম') ? 'name' : bad.includes('মোবাইল') ? 'phone' : bad.includes('Gmail') ? 'email' : 'address'}"]`); el.focus(); return; }
+      const bad = !v('name') ? 'আপনার নাম লিখুন' : !/^(\+?88)?01[3-9]\d{8}$/.test(v('phone').replace(/[\s-]/g, '')) ? 'সঠিক মোবাইল নম্বর লিখুন (01XXXXXXXXX)' : !v('address') ? 'সম্পূর্ণ ঠিকানা লিখুন' : '';
+      if (bad) { err.textContent = bad; const el = form.querySelector(`[name="${bad.includes('নাম') ? 'name' : bad.includes('মোবাইল') ? 'phone' : 'address'}"]`); el.focus(); return; }
       err.textContent = '';
       const t = draw(); const orders = RS.orders(); const no = 'RS' + (1001 + orders.length);
-      orders.unshift({ no, date: new Date().toISOString(), name: v('name'), email: v('email').toLowerCase(), phone: v('phone'), address: v('address'), zone, note: v('note'), pay: 'Cash on Delivery', status: 'Pending',
+      orders.unshift({ no, date: new Date().toISOString(), name: v('name'), email: '', phone: v('phone'), address: v('address'), zone, note: v('note'), pay: 'Cash on Delivery', status: 'Pending',
         items: [{ name: p.name, img: p.img, color, size, qty: t.n, price }], sub: t.sub, ship: t.ship, total: t.total });
       RS.saveOrders(orders); sendOrderMail(orders[0]); location.hash = '#/done/' + no;
     };
@@ -334,7 +337,6 @@
     <form class="wrap co" id="coForm"><div>
       <label>Full name *<input name="name" required></label>
       <label>Mobile number *<input name="phone" required pattern="(\\+?88)?01[3-9][0-9]{8}" placeholder="01XXXXXXXXX"></label>
-      <label>Gmail * <small style="color:var(--muted)">(we will email your order details)</small><input name="email" id="email" type="email" required placeholder="yourname@gmail.com"></label>
       <label>Full address *<textarea name="address" rows="2" required placeholder="House, road, area"></textarea></label>
       <label>Delivery area<select name="zone" id="zone"><option value="inside">Inside Dhaka (৳70, free over ৳3,000)</option><option value="outside">Outside Dhaka (৳130)</option></select></label>
       <label>Note (optional)<input name="note"></label>
@@ -352,7 +354,7 @@
     zone.onchange = draw; draw();
     document.getElementById('coForm').onsubmit = e => {
       e.preventDefault(); const f = new FormData(e.target); const t = totals(ls, f.get('zone'));
-      const sentTo = f.get('email').trim().toLowerCase();
+      const sentTo = '';
       const orders = RS.orders(); const no = 'RS' + (1001 + orders.length);
       orders.unshift({ no, date: new Date().toISOString(), name: f.get('name'), email: sentTo, phone: f.get('phone'), address: f.get('address'), zone: f.get('zone'), note: f.get('note'), pay: f.get('pay'), status: 'Pending',
         items: ls.map(l => ({ name: l.p.name, img: l.p.img, color: l.color, size: l.size, qty: l.qty, price: now(l.p) })), ...t });
@@ -361,7 +363,7 @@
   }
   function sendOrderMail(o) {
     const cfg = RS.EMAILJS;
-    if (!(cfg.publicKey && cfg.serviceId && cfg.templateId && window.emailjs)) return;
+    if (!o.email || !(cfg.publicKey && cfg.serviceId && cfg.templateId && window.emailjs)) return;
     const items = o.items.map(i => `${i.name} (${[i.color, i.size].filter(Boolean).join(' / ')}) x ${i.qty} = ${money(i.price * i.qty)}`).join('\n');
     emailjs.send(cfg.serviceId, cfg.templateId, { to_email: o.email, name: o.name, order_no: o.no, items, total: money(o.total), payment: o.pay, address: o.address, whatsapp: RS.SHOP.whatsapp },
       { publicKey: cfg.publicKey }).catch(() => {});
